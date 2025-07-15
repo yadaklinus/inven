@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -353,11 +354,11 @@ const filteredWarehouses = warehousesData?.filter((warehouse: any) => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <a href={`/sup-admin/warehouses/${warehouse?.warehouseCode}`}>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/sup-admin/warehouses/${warehouse?.warehouseCode}`}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
-                              </a>
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Edit className="mr-2 h-4 w-4" />

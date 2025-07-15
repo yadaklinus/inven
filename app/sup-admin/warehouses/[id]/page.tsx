@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -54,6 +55,8 @@ import {
   BarChart3,
   PieChartIcon,
   Activity,
+  ArrowLeft,
+  AlertCircle,
 } from "lucide-react"
 import {
   LineChart,
@@ -68,23 +71,7 @@ import {
   Bar,
   Cell
 } from "recharts"
-
-// Sample warehouse data
-const warehouseData = {
-  id: "WH-001",
-  code: "MAIN",
-  name: "Main Warehouse",
-  address: "123 Warehouse District, Industrial Area, City 12345",
-  phone: "+1234567890",
-  email: "main@inventorypro.com",
-  manager: "John Manager",
-  capacity: 10000,
-  currentStock: 7500,
-  totalProducts: 1234,
-  assignedUsers: 8,
-  status: "active",
-  createdDate: "2024-01-01",
-}
+import fetchData from "@/hooks/fetch-data"
 
 // Sample financial data
 const financialData = {
@@ -211,10 +198,64 @@ const availableUsers = [
   { id: "USR-006", name: "Lisa Supervisor", role: "manager", email: "lisa@inventorypro.com" },
 ]
 
-export default function WarehouseDetailsPage() {
+export default function WarehouseDetailsPage({ 
+  params 
+}: { 
+  params: { id: string } 
+}) {
+  const router = useRouter()
   const [selectedPeriod, setSelectedPeriod] = useState("6months")
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState("")
+  
+  // Fetch warehouse data using the ID from params
+  const { data: warehouseData, loading, error } = fetchData(
+    params?.id ? `/api/warehouse/${params.id}` : null
+  )
+
+  // Loading state
+  if (loading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-1 items-center justify-center p-8">
+            <div className="text-center">
+              <Activity className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+              <p className="text-muted-foreground">Loading warehouse details...</p>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
+
+  // Error state
+  if (error || !warehouseData) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-1 items-center justify-center p-8">
+            <div className="text-center max-w-md">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-600" />
+              <h2 className="text-2xl font-semibold mb-2">Warehouse Not Found</h2>
+              <p className="text-muted-foreground mb-4">
+                The warehouse you're looking for doesn't exist or has been removed.
+              </p>
+              <Button 
+                onClick={() => router.push('/sup-admin/warehouses/list')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Warehouses
+              </Button>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -263,7 +304,9 @@ export default function WarehouseDetailsPage() {
   }
 
   return (
-    <>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
@@ -271,11 +314,11 @@ export default function WarehouseDetailsPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
+                  <BreadcrumbLink href="/sup-admin/dashboard">Home</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/warehouses/list">Warehouses</BreadcrumbLink>
+                  <BreadcrumbLink href="/sup-admin/warehouses/list">Warehouses</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
@@ -295,354 +338,293 @@ export default function WarehouseDetailsPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-blue-600">{warehouseData.name}</h1>
-                <p className="text-muted-foreground font-mono">{warehouseData.code}</p>
+                <p className="text-muted-foreground font-mono">{warehouseData.warehouseCode}</p>
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{warehouseData.address.split(",")[0]}</span>
+                    <span>{warehouseData.address}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    <span>{warehouseData.assignedUsers} users</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Package className="h-4 w-4" />
-                    <span>{warehouseData.totalProducts} products</span>
+                    <span>{warehouseData.stats?.assignedUsers || 0} Users</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Warehouse
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/sup-admin/warehouses/list')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to List
               </Button>
-              <Button variant="outline" size="sm">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Export Report
+              <Button className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit Warehouse
               </Button>
             </div>
           </div>
 
-          {/* Key Metrics Cards */}
+          {/* Warehouse Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{warehouseData.stats?.totalProducts || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  Active inventory items
+                </p>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${financialData.totalSales.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-green-600" />+{financialData.monthlyGrowth}% from last month
+                <div className="text-2xl font-bold">
+                  ${warehouseData.stats?.totalSales?.toLocaleString() || '0'}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Total sales amount
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Purchases</CardTitle>
-                <Truck className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${financialData.totalPurchases.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Cost of goods purchased</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">${financialData.totalProfit.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">{financialData.profitMargin}% profit margin</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Capacity Used</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{getCapacityPercentage()}%</div>
+                <div className="text-2xl font-bold">{warehouseData.stats?.totalOrders || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {warehouseData.currentStock.toLocaleString()} / {warehouseData.capacity.toLocaleString()} sq ft
+                  Completed transactions
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Assigned Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{warehouseData.stats?.assignedUsers || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  Active warehouse staff
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+          {/* Warehouse Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Warehouse Information</CardTitle>
+              <CardDescription>
+                Basic details and contact information for this warehouse
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Warehouse Name</Label>
+                <p className="text-sm text-muted-foreground">{warehouseData.name}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Warehouse Code</Label>
+                <p className="text-sm text-muted-foreground">{warehouseData.warehouseCode}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Email</Label>
+                <p className="text-sm text-muted-foreground">{warehouseData.email}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Phone Number</Label>
+                <p className="text-sm text-muted-foreground">{warehouseData.phoneNumber}</p>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-sm font-medium">Address</Label>
+                <p className="text-sm text-muted-foreground">{warehouseData.address}</p>
+              </div>
+              {warehouseData.description && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-sm font-medium">Description</Label>
+                  <p className="text-sm text-muted-foreground">{warehouseData.description}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="sales">Sales & Purchases</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="users">User Management</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="sales">Recent Sales</TabsTrigger>
+              <TabsTrigger value="users">Assigned Users</TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Financial Performance Chart */}
-                <Card>
+            <TabsContent value="overview" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <Card className="col-span-4">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Financial Performance
-                    </CardTitle>
-                    <CardDescription>Sales, purchases, and profit over time</CardDescription>
+                    <CardTitle>Financial Overview</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                  <CardContent className="pl-2">
+                    <ResponsiveContainer width="100%" height={350}>
                       <LineChart data={monthlyData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, ""]} />
-                        <Line type="monotone" dataKey="sales" stroke="#0088FE" strokeWidth={2} name="Sales" />
-                        <Line type="monotone" dataKey="purchases" stroke="#FF8042" strokeWidth={2} name="Purchases" />
-                        <Line type="monotone" dataKey="profit" stroke="#00C49F" strokeWidth={2} name="Profit" />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2} />
+                        <Line type="monotone" dataKey="purchases" stroke="#dc2626" strokeWidth={2} />
+                        <Line type="monotone" dataKey="profit" stroke="#16a34a" strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-
-                {/* Product Categories */}
-                {/* <Card>
+                <Card className="col-span-3">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <PieChartIcon className="h-5 w-5" />
-                      Product Categories
-                    </CardTitle>
-                    <CardDescription>Distribution of products by category</CardDescription>
+                    <CardTitle>Product Categories</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={350}>
                       <Pie
                         data={categoryData}
                         cx="50%"
                         cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {categoryData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                     </ResponsiveContainer>
-                    
                   </CardContent>
-                </Card> */}
+                </Card>
               </div>
+            </TabsContent>
 
-              {/* Warehouse Information */}
+            <TabsContent value="products" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Warehouse Information</CardTitle>
+                  <CardTitle>Product Inventory</CardTitle>
+                  <CardDescription>
+                    All products currently stored in this warehouse
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium">Contact Information</Label>
-                        <div className="mt-2 space-y-2 text-sm">
-                          <div>Phone: {warehouseData.phone}</div>
-                          <div>Email: {warehouseData.email}</div>
-                          <div>Manager: {warehouseData.manager}</div>
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Address</Label>
-                        <div className="mt-2 text-sm text-muted-foreground">{warehouseData.address}</div>
-                      </div>
+                  {warehouseData.products && warehouseData.products.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product Name</TableHead>
+                          <TableHead>SKU</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Stock</TableHead>
+                          <TableHead>Unit</TableHead>
+                          <TableHead>Price</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {warehouseData.products.map((product: any) => (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell>{product.sku}</TableCell>
+                            <TableCell>{product.category}</TableCell>
+                            <TableCell>{product.stock}</TableCell>
+                            <TableCell>{product.unit}</TableCell>
+                            <TableCell>${product.sellingPrice}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-medium mb-2">No Products Found</h3>
+                      <p className="text-muted-foreground">
+                        This warehouse doesn't have any products yet.
+                      </p>
                     </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium">Capacity Details</Label>
-                        <div className="mt-2 space-y-2 text-sm">
-                          <div>Total Capacity: {warehouseData.capacity.toLocaleString()} sq ft</div>
-                          <div>Current Stock: {warehouseData.currentStock.toLocaleString()} sq ft</div>
-                          <div>
-                            Available Space: {(warehouseData.capacity - warehouseData.currentStock).toLocaleString()} sq
-                            ft
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Statistics</Label>
-                        <div className="mt-2 space-y-2 text-sm">
-                          <div>Total Products: {warehouseData.totalProducts.toLocaleString()}</div>
-                          <div>Assigned Users: {warehouseData.assignedUsers}</div>
-                          <div>Created: {new Date(warehouseData.createdDate).toLocaleDateString()}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Sales & Purchases Tab */}
-            <TabsContent value="sales" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Recent Transactions</h3>
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7days">Last 7 days</SelectItem>
-                    <SelectItem value="30days">Last 30 days</SelectItem>
-                    <SelectItem value="3months">Last 3 months</SelectItem>
-                    <SelectItem value="6months">Last 6 months</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Recent Sales */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ShoppingCart className="h-5 w-5" />
-                      Recent Sales
-                    </CardTitle>
-                    <CardDescription>Latest sales transactions from this warehouse</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+            <TabsContent value="sales" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Sales</CardTitle>
+                  <CardDescription>
+                    Latest sales transactions from this warehouse
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {warehouseData.sale && warehouseData.sale.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Sale ID</TableHead>
+                          <TableHead>Date</TableHead>
                           <TableHead>Customer</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Profit</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {recentSales.map((sale) => (
-                          <TableRow key={sale.id}>
-                            <TableCell className="font-medium">{sale.id}</TableCell>
-                            <TableCell>{sale.customer}</TableCell>
-                            <TableCell>${sale.amount.toFixed(2)}</TableCell>
-                            <TableCell className="text-green-600">${sale.profit.toFixed(2)}</TableCell>
-                            <TableCell>{getStatusBadge(sale.status)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-
-                {/* Recent Purchases */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Truck className="h-5 w-5" />
-                      Recent Purchases
-                    </CardTitle>
-                    <CardDescription>Latest purchase orders for this warehouse</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>PO ID</TableHead>
-                          <TableHead>Supplier</TableHead>
-                          <TableHead>Amount</TableHead>
                           <TableHead>Items</TableHead>
+                          <TableHead>Total Amount</TableHead>
                           <TableHead>Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {recentPurchases.map((purchase) => (
-                          <TableRow key={purchase.id}>
-                            <TableCell className="font-medium">{purchase.id}</TableCell>
-                            <TableCell>{purchase.supplier}</TableCell>
-                            <TableCell>${purchase.amount.toFixed(2)}</TableCell>
-                            <TableCell>{purchase.items}</TableCell>
-                            <TableCell>{getStatusBadge(purchase.status)}</TableCell>
+                        {warehouseData.sale.slice(0, 10).map((sale: any) => (
+                          <TableRow key={sale.id}>
+                            <TableCell className="font-medium">{sale.id.slice(0, 8)}</TableCell>
+                            <TableCell>
+                              {new Date(sale.createdAt).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>{sale.selectedCustomer?.name || 'Walk-in Customer'}</TableCell>
+                            <TableCell>{sale.saleItems?.length || 0}</TableCell>
+                            <TableCell>${sale.totalAmount?.toLocaleString() || '0'}</TableCell>
+                            <TableCell>
+                              <Badge variant="default" className="bg-green-600">
+                                Completed
+                              </Badge>
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
-              </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-medium mb-2">No Sales Found</h3>
+                      <p className="text-muted-foreground">
+                        This warehouse doesn't have any sales records yet.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
-              <div className="grid gap-6">
-                {/* Monthly Performance Bar Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Monthly Performance Analysis
-                    </CardTitle>
-                    <CardDescription>Detailed breakdown of sales, purchases, and profit by month</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={400}>
-                      <BarChart data={monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, ""]} />
-                        <Bar dataKey="sales" fill="#0088FE" name="Sales" />
-                        <Bar dataKey="purchases" fill="#FF8042" name="Purchases" />
-                        <Bar dataKey="profit" fill="#00C49F" name="Profit" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                {/* Key Performance Indicators */}
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Average Order Value</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">${financialData.averageOrderValue.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">Per transaction</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Top Selling Product</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-lg font-bold">{financialData.topSellingProduct}</div>
-                      <p className="text-xs text-muted-foreground">Best performer</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Profit Margin</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-green-600">{financialData.profitMargin}%</div>
-                      <p className="text-xs text-muted-foreground">Overall margin</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* User Management Tab */}
-            <TabsContent value="users" className="space-y-6">
+            <TabsContent value="users" className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Assigned Users</h3>
+                <div>
+                  <h2 className="text-lg font-semibold">Assigned Users</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Users who have access to this warehouse
+                  </p>
+                </div>
                 <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
                   <DialogTrigger asChild>
-                    <Button>
-                      <UserPlus className="mr-2 h-4 w-4" />
+                    <Button className="gap-2">
+                      <UserPlus className="h-4 w-4" />
                       Add User
                     </Button>
                   </DialogTrigger>
@@ -684,83 +666,91 @@ export default function WarehouseDetailsPage() {
 
               <Card>
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead>Permissions</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {assignedUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={user.avatar || ""} alt={user.name} />
-                                <AvatarFallback>
-                                  {user.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{user.name}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{getRoleBadge(user.role)}</TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{new Date(user.lastActive).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              {user.permissions.map((permission) => (
-                                <Badge key={permission} variant="outline" className="text-xs">
-                                  {permission}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Permissions
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600">
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Remove from Warehouse
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
+                  {warehouseData.users && warehouseData.users.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Last Login</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {warehouseData.users.map((user: any) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src="" alt={user.userName} />
+                                  <AvatarFallback>
+                                    {user.userName
+                                      .split(" ")
+                                      .map((n: string) => n[0])
+                                      .join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="font-medium">{user.userName}</div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{getRoleBadge(user.role)}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>{user.phoneNumber}</TableCell>
+                            <TableCell>
+                              {user.lastLogin 
+                                ? new Date(user.lastLogin).toLocaleDateString()
+                                : 'Never'
+                              }
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Profile
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Permissions
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Remove from Warehouse
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-medium mb-2">No Users Assigned</h3>
+                      <p className="text-muted-foreground">
+                        This warehouse doesn't have any assigned users yet.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
-      </>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
