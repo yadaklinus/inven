@@ -4,6 +4,7 @@ import { Link } from "@heroui/link";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
+import { SyncProvider } from "@/components/sync-provider";
 
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
@@ -45,18 +46,20 @@ export default function RootLayout({
       >
         <SessionAppProvider>
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div >
-            <main >
-              <Toaster/>
-              {children}
-            </main>
-            <footer className="w-full flex items-center justify-center py-3">
-             
-                <span className="text-default-600">Powered by</span>
-                <p className="text-primary">HeroUI</p>
-             
-            </footer>
-          </div>
+          <SyncProvider>
+            <div >
+              <main >
+                <Toaster/>
+                {children}
+              </main>
+              <footer className="w-full flex items-center justify-center py-3">
+               
+                  <span className="text-default-600">Powered by</span>
+                  <p className="text-primary">HeroUI</p>
+               
+              </footer>
+            </div>
+          </SyncProvider>
         </Providers>
         </SessionAppProvider>
       </body>

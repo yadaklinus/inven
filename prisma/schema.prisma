@@ -8,10 +8,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Offline database (SQLite) - Main database
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
-  //directUrl = env("DIRECT_URL")
 }
 
 enum mode {
@@ -45,6 +45,8 @@ model superAdmin {
   role         String
   lastLogin    DateTime?
   warehousesId String?
+  sync         Boolean   @default(false) // Sync field
+  syncedAt     DateTime? // When last synced
 }
 
 model users {
@@ -57,10 +59,12 @@ model users {
   warehouses   Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId String?
   lastLogin    DateTime?
+  sync         Boolean     @default(false) // Sync field
+  syncedAt     DateTime?   // When last synced
 }
 
 model Settings {
-  setting_id      Int    @id
+  setting_id      Int       @id
   companyName     String
   companyEmail    String
   phoneNumber     String
@@ -71,6 +75,8 @@ model Settings {
   taxRate         Int
   mode            mode
   itermsPerPage   Int
+  sync            Boolean   @default(false) // Sync field
+  syncedAt        DateTime? // When last synced
 }
 
 model Warehouses {
@@ -87,6 +93,8 @@ model Warehouses {
   saleItem      SaleItem[]
   sale          Sale[]
   paymentMethod PaymentMethod[]
+  sync          Boolean         @default(false) // Sync field
+  syncedAt      DateTime?       // When last synced
 }
 
 model Sale {
@@ -106,6 +114,8 @@ model Sale {
   warehouses         Warehouses?     @relation(fields: [warehousesId], references: [warehouseCode])
   invoiceNo          String          @unique
   paymentMethod      PaymentMethod[]
+  sync               Boolean         @default(false) // Sync field
+  syncedAt           DateTime?       // When last synced
 }
 
 model Customer {
@@ -115,10 +125,12 @@ model Customer {
   companyName  String?
   email        String?
   address      String?
-  phone String?
+  phone        String?
   Warehouses   Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId String
   Sale         Sale[]
+  sync         Boolean     @default(false) // Sync field
+  syncedAt     DateTime?   // When last synced
 }
 
 model SaleItem {
@@ -137,6 +149,8 @@ model SaleItem {
   profit        Float
   Warehouses    Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId  String?
+  sync          Boolean     @default(false) // Sync field
+  syncedAt      DateTime?   // When last synced
 }
 
 model Product {
@@ -153,6 +167,8 @@ model Product {
   warehouses     Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId   String?
   SaleItem       SaleItem[]
+  sync           Boolean     @default(false) // Sync field
+  syncedAt       DateTime?   // When last synced
 }
 
 model PaymentMethod {
@@ -164,4 +180,6 @@ model PaymentMethod {
   warehousesId String?
   Sale         Sale?       @relation(fields: [saleId], references: [invoiceNo])
   saleId       String?
+  sync         Boolean     @default(false) // Sync field
+  syncedAt     DateTime?   // When last synced
 }
