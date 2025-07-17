@@ -1,6 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { getWareHouseId } from "@/hooks/get-werehouseId"
+import fetchWareHouseData from "@/hooks/fetch-invidual-data"
+import { Loading } from "@/components/loading"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -44,83 +48,38 @@ import {
   AlertCircle,
 } from "lucide-react"
 
-interface PurchaseItem {
-  id: string
-  invoiceNumber: string
-  productId: string
-  productName: string
-  productCode: string
-  costPrice: number
-  quantity: number
-  discount: number
-  total: number
-}
 
-interface PurchaseData {
-  id: string
-  invoiceNumber: string
-  referenceNo: string
-  date: string
-  supplierId: string
-  supplierName: string
-  warehouseId: string
-  warehouseName: string
-  items: PurchaseItem[]
-  subtotal: number
-  taxRate: number
-  taxAmount: number
-  shipping: number
-  grandTotal: number
-  paidAmount: number
-  status: "ordered" | "received" | "pending"
-  paymentStatus: "paid" | "partial" | "pending"
-  notes: string
-  createdAt: string
-}
 
 export default function ViewPurchasesPage() {
-  const [purchases, setPurchases] = useState<PurchaseData[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all")
+  const router = useRouter()
 
-  useEffect(() => {
-    // Load purchases from localStorage (replace with API call)
-    const savedPurchases = JSON.parse(localStorage.getItem("purchases") || "[]")
-    setPurchases(savedPurchases)
-  }, [])
+  const warehouseId = getWareHouseId()
+  const { data: purchases, loading, error } = fetchWareHouseData("/api/purchase/list", { warehouseId })
 
-  const filteredPurchases = purchases.filter((purchase) => {
+  if (loading) return <Loading />
+  if (error) return <div>Error loading purchases</div>
+  if (!purchases) return <div>No purchases found</div>
+
+
+
+  const handleDelete = (purchaseId: string) => {
+    // Delete functionality - placeholder for now
+    console.log("Delete purchase:", purchaseId)
+  }
+
+  const filteredPurchases = purchases?.filter((purchase: any) => {
     const matchesSearch =
-      purchase.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       purchase.referenceNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      purchase.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      purchase.warehouseName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || purchase.status === statusFilter
-    const matchesPayment = paymentFilter === "all" || purchase.paymentStatus === paymentFilter
-
-    let matchesDate = true
-    if (dateFilter !== "all") {
-      const purchaseDate = new Date(purchase.date)
-      const today = new Date()
-      const daysDiff = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24))
-
-      switch (dateFilter) {
-        case "today":
-          matchesDate = daysDiff === 0
-          break
-        case "week":
-          matchesDate = daysDiff <= 7
-          break
-        case "month":
-          matchesDate = daysDiff <= 30
-          break
-      }
-    }
-
-    return matchesSearch && matchesStatus && matchesPayment && matchesDate
-  })
+      (purchase.Supplier?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
+    
+    // Note: status and paymentStatus filtering would need to be added to the backend
+    // For now, we'll just filter by search term
+    return matchesSearch
+  }) || []
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -171,20 +130,16 @@ export default function ViewPurchasesPage() {
     setDateFilter("all")
   }
 
-  const handleDelete = (purchaseId: string) => {
-    const updatedPurchases = purchases.filter((p) => p.id !== purchaseId)
-    setPurchases(updatedPurchases)
-    localStorage.setItem("purchases", JSON.stringify(updatedPurchases))
-  }
 
-  const handlePrint = (purchase: PurchaseData) => {
+
+  const handlePrint = (purchase: any) => {
     const printWindow = window.open("", "_blank")
     if (!printWindow) return
 
     printWindow.document.write(`
       <html>
         <head>
-          <title>Purchase Order - ${purchase.invoiceNumber}</title>
+          <title>Purchase Order - ${purchase.referenceNo}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
@@ -200,22 +155,19 @@ export default function ViewPurchasesPage() {
         <body>
           <div class="header">
             <h1>PURCHASE ORDER</h1>
-            <h2>Invoice: ${purchase.invoiceNumber}</h2>
-            <p>Reference: ${purchase.referenceNo}</p>
-            <p>Date: ${new Date(purchase.date).toLocaleDateString()}</p>
+            <h2>Reference: ${purchase.referenceNo}</h2>
+            <p>Date: ${new Date(purchase.createdAt).toLocaleDateString()}</p>
           </div>
           
           <div class="details">
-            <h3>Supplier: ${purchase.supplierName}</h3>
-            <h3>Warehouse: ${purchase.warehouseName}</h3>
+            <h3>Supplier: ${purchase.Supplier?.name || 'N/A'}</h3>
+            <h3>Warehouse: Current Warehouse</h3>
           </div>
 
           <table class="items">
             <thead>
               <tr>
-                <th>Item Invoice</th>
                 <th>Product</th>
-                <th>Code</th>
                 <th>Cost Price</th>
                 <th>Quantity</th>
                 <th>Discount</th>
@@ -223,14 +175,12 @@ export default function ViewPurchasesPage() {
               </tr>
             </thead>
             <tbody>
-              ${purchase.items
+              ${(purchase.purchaseItem || [])
                 .map(
-                  (item) => `
+                  (item: any) => `
                 <tr>
-                  <td>${item.invoiceNumber}</td>
                   <td>${item.productName}</td>
-                  <td>${item.productCode}</td>
-                  <td>$${item.costPrice.toFixed(2)}</td>
+                  <td>$${item.cost.toFixed(2)}</td>
                   <td>${item.quantity}</td>
                   <td>$${item.discount.toFixed(2)}</td>
                   <td>$${item.total.toFixed(2)}</td>
@@ -244,15 +194,11 @@ export default function ViewPurchasesPage() {
           <div class="totals">
             <div class="total-row">
               <span>Subtotal:</span>
-              <span>$${purchase.subtotal.toFixed(2)}</span>
+              <span>$${purchase.subTotal.toFixed(2)}</span>
             </div>
             <div class="total-row">
               <span>Tax (${purchase.taxRate}%):</span>
-              <span>$${purchase.taxAmount.toFixed(2)}</span>
-            </div>
-            <div class="total-row">
-              <span>Shipping:</span>
-              <span>$${purchase.shipping.toFixed(2)}</span>
+              <span>$${((purchase.subTotal * purchase.taxRate) / 100).toFixed(2)}</span>
             </div>
             <div class="total-row grand-total">
               <span>Grand Total:</span>
@@ -264,12 +210,18 @@ export default function ViewPurchasesPage() {
             </div>
             <div class="total-row">
               <span>Balance:</span>
-              <span>$${(purchase.grandTotal - purchase.paidAmount).toFixed(2)}</span>
+              <span>$${purchase.balance.toFixed(2)}</span>
             </div>
           </div>
 
+          ${purchase.notes ? `
+          <div style="margin-top: 30px;">
+            <h3>Notes:</h3>
+            <p>${purchase.notes}</p>
+          </div>
+          ` : ''}
+
           <div style="margin-top: 50px; text-align: center; color: #666;">
-            <p>Status: ${purchase.status.toUpperCase()} | Payment: ${purchase.paymentStatus.toUpperCase()}</p>
             <p>Generated on ${new Date().toLocaleString()}</p>
           </div>
         </body>
@@ -281,11 +233,11 @@ export default function ViewPurchasesPage() {
   }
 
   // Calculate statistics
-  const totalPurchases = purchases.length
-  const totalValue = purchases.reduce((sum, purchase) => sum + purchase.grandTotal, 0)
-  const totalPaid = purchases.reduce((sum, purchase) => sum + purchase.paidAmount, 0)
+  const totalPurchases = purchases?.length || 0
+  const totalValue = purchases?.reduce((sum: number, purchase: any) => sum + purchase.grandTotal, 0) || 0
+  const totalPaid = purchases?.reduce((sum: number, purchase: any) => sum + purchase.paidAmount, 0) || 0
   const pendingPayments = totalValue - totalPaid
-  const receivedPurchases = purchases.filter((p) => p.status === "received").length
+  const receivedPurchases = purchases?.filter((p: any) => p.status === "received").length || 0
 
   return (
     <>
@@ -327,7 +279,7 @@ export default function ViewPurchasesPage() {
                 Export
               </Button>
               <Button asChild>
-                <a href="/purchases/add">
+                <a href={`/warehouse/${warehouseId}/admin/purchases/add`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Purchase
                 </a>
@@ -466,7 +418,7 @@ export default function ViewPurchasesPage() {
             <CardHeader>
               <CardTitle>Purchase Orders</CardTitle>
               <CardDescription>
-                Showing {filteredPurchases.length} of {purchases.length} purchases
+                Showing {filteredPurchases.length} of {purchases?.length || 0} purchases
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -475,11 +427,11 @@ export default function ViewPurchasesPage() {
                   <Truck className="mx-auto h-12 w-12 mb-4" />
                   <p>
                     No purchases found.{" "}
-                    {purchases.length === 0 ? "Create your first purchase order!" : "Try adjusting your filters."}
+                    {(purchases?.length || 0) === 0 ? "Create your first purchase order!" : "Try adjusting your filters."}
                   </p>
-                  {purchases.length === 0 && (
+                  {(purchases?.length || 0) === 0 && (
                     <Button asChild className="mt-4">
-                      <a href="/purchases/add">
+                      <a href={`/warehouse/${warehouseId}/admin/purchases/add`}>
                         <Plus className="mr-2 h-4 w-4" />
                         Add Purchase
                       </a>
@@ -505,21 +457,23 @@ export default function ViewPurchasesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredPurchases.map((purchase) => (
+                    {filteredPurchases.map((purchase: any) => (
                       <TableRow key={purchase.id}>
-                        <TableCell className="font-mono text-xs">{purchase.invoiceNumber}</TableCell>
+                        <TableCell className="font-mono text-xs">{purchase.referenceNo}</TableCell>
                         <TableCell className="font-medium">{purchase.referenceNo}</TableCell>
-                        <TableCell>{new Date(purchase.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{purchase.supplierName}</TableCell>
-                        <TableCell>{purchase.warehouseName}</TableCell>
-                        <TableCell>{purchase.items.length}</TableCell>
+                        <TableCell>{new Date(purchase.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{purchase.Supplier?.name || "N/A"}</TableCell>
+                        <TableCell>Current Warehouse</TableCell>
+                        <TableCell>{purchase.purchaseItem?.length || 0}</TableCell>
                         <TableCell>${purchase.grandTotal.toFixed(2)}</TableCell>
                         <TableCell className="text-green-600">${purchase.paidAmount.toFixed(2)}</TableCell>
                         <TableCell className="text-orange-600">
-                          ${(purchase.grandTotal - purchase.paidAmount).toFixed(2)}
+                          ${purchase.balance.toFixed(2)}
                         </TableCell>
-                        <TableCell>{getStatusBadge(purchase.status)}</TableCell>
-                        <TableCell>{getPaymentBadge(purchase.paymentStatus)}</TableCell>
+                        <TableCell><Badge variant="outline">Ordered</Badge></TableCell>
+                        <TableCell><Badge variant="outline">
+                          {purchase.paidAmount >= purchase.grandTotal ? "Paid" : purchase.paidAmount > 0 ? "Partial" : "Pending"}
+                        </Badge></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -530,7 +484,7 @@ export default function ViewPurchasesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => router.push(`/warehouse/${warehouseId}/admin/purchases/${purchase.id}`)}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
                               </DropdownMenuItem>

@@ -7,16 +7,20 @@ export async function POST(req: NextRequest) {
     const { warehouseId } = await req.json()
 
     try {
-        const suppliers = await prisma.supplier.findMany({
+        const purchases = await prisma.purchase.findMany({
             where: {
                 warehousesId: warehouseId
             },
+            include: {
+                purchaseItem: true,
+                Supplier: true
+            },
             orderBy: {
-                name: 'asc'
+                createdAt: 'desc'
             }
         })
 
-        return NextResponse.json(suppliers)
+        return NextResponse.json(purchases)
     } catch (error) {
         console.log(error)
         return NextResponse.json(error, { status: 500 })

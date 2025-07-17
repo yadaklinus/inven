@@ -203,7 +203,7 @@ interface PurchaseData {
 export default function AddPurchasePage() {
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItem[]>([])
   const [selectedSupplier, setSelectedSupplier] = useState("")
-  const [selectedWarehouse, setSelectedWarehouse] = useState("")
+
   const [selectedProductId, setSelectedProductId] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [discount, setDiscount] = useState(0)
@@ -251,7 +251,7 @@ export default function AddPurchasePage() {
 
     const selectedPrice = getCurrentPrice(selectedProduct, priceType)
 
-    const itemTotal = selectedProduct.costPrice * quantity - discount
+    const itemTotal = selectedProduct.cost * quantity - discount
     const newItem: PurchaseItem = {
       id: `ITEM-${Date.now()}`,
         productId: selectedProduct.id,
@@ -308,49 +308,87 @@ export default function AddPurchasePage() {
     return "partial"
   }
 
-  const handleSubmit = () => {
-    if (purchaseItems.length === 0 || !selectedSupplier || !selectedWarehouse) return
+  const handleSubmit = async () => {
+    if (purchaseItems.length === 0 || !selectedSupplier) return
 
-    const supplier = suppliers.find((s:any) => s.id === selectedSupplier)
-    const warehouse = warehouses.find((w) => w.id === selectedWarehouse)
+    const supplier = suppliers?.find((s:any) => s.id === selectedSupplier)
 
-    const purchaseData: PurchaseData = {
-      id: `PUR-${Date.now()}`,
-      invoiceNumber: generateInvoiceNumber(),
+    const purchaseData = {
+      items: purchaseItems.map(item => ({
+        productName: item.productName,
+        productBarcode: item.productBarcode,
+        cost: item.cost,
+        selectedPrice: item.selectedPrice,
+        priceType: item.priceType,
+        quantity: item.quantity,
+        discount: item.discount,
+        total: item.total
+      })),
       referenceNo,
-      date: new Date().toISOString().split("T")[0],
-      supplierId: selectedSupplier,
-      supplierName: supplier?.name || "",
-      warehouseId: selectedWarehouse,
-      warehouseName: warehouse?.name || "",
-      items: purchaseItems,
       subtotal,
       taxRate,
       taxAmount,
       shipping,
       grandTotal,
       paidAmount,
-      status,
-      paymentStatus: getPaymentStatus(),
+      balance: grandTotal - paidAmount,
       notes,
-      createdAt: new Date().toISOString(),
+      warehouseId,
+      supplierId: selectedSupplier,
+      status
     }
 
-    // Save to localStorage (replace with API call)
-    const existingPurchases = JSON.parse(localStorage.getItem("purchases") || "[]")
-    existingPurchases.push(purchaseData)
-    localStorage.setItem("purchases", JSON.stringify(existingPurchases))
+    try {
+      const response = await fetch('/api/purchase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(purchaseData),
+      })
 
-    setCreatedPurchase(purchaseData)
-    setShowSuccessDialog(true)
+      if (response.ok) {
+        const result = await response.json()
+        
+        const completedPurchase: PurchaseData = {
+          id: result.purchase.id,
+          invoiceNumber: result.purchase.referenceNo,
+          referenceNo,
+          date: new Date().toISOString().split("T")[0],
+          supplierId: selectedSupplier,
+          supplierName: supplier?.name || "",
+          warehouseId: warehouseId,
+          warehouseName: "",
+          items: purchaseItems,
+          subtotal,
+          taxRate,
+          taxAmount,
+          shipping,
+          grandTotal,
+          paidAmount,
+          status,
+          paymentStatus: getPaymentStatus(),
+          notes,
+          createdAt: new Date().toISOString(),
+        }
 
-    // Reset form
-    setPurchaseItems([])
-    setSelectedSupplier("")
-    setSelectedWarehouse("")
-    setPaidAmount(0)
-    setNotes("")
-    setReferenceNo(`PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, "0")}`)
+        setCreatedPurchase(completedPurchase)
+        setShowSuccessDialog(true)
+
+        // Reset form
+        setPurchaseItems([])
+        setSelectedSupplier("")
+        setPaidAmount(0)
+        setNotes("")
+        setReferenceNo(`PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, "0")}`)
+      } else {
+        console.error('Failed to create purchase order')
+        alert('Failed to create purchase order. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error creating purchase order:', error)
+      alert('Error creating purchase order. Please try again.')
+    }
   }
 
   const handlePrintReceipt = () => {
@@ -913,7 +951,7 @@ export default function AddPurchasePage() {
             <Button variant="outline">Save as Draft</Button>
             <Button
               onClick={handleSubmit}
-              disabled={purchaseItems.length === 0 || !selectedSupplier || !selectedWarehouse}
+              disabled={purchaseItems.length === 0 || !selectedSupplier}
             >
               <Check className="mr-2 h-4 w-4" />
               Create Purchase Order
