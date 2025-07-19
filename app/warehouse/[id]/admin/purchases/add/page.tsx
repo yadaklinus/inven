@@ -169,6 +169,8 @@ interface PurchaseItem {
   cost: number
   wholeSalePrice: number
   retailPrice: number
+  customRetailPrice?: number
+  customWholesalePrice?: number
   selectedPrice: number
   priceType: "wholesale" | "retail"
   quantity: number
@@ -213,6 +215,10 @@ export default function AddPurchasePage() {
   const [status, setStatus] = useState<"ordered" | "received" | "pending">("ordered")
   const [notes, setNotes] = useState("")
   const [priceType, setPriceType] = useState<"wholesale" | "retail">("retail")
+  const [customRetailPrice, setCustomRetailPrice] = useState<number | undefined>(undefined)
+  const [customWholesalePrice, setCustomWholesalePrice] = useState<number | undefined>(undefined)
+  const [enableCustomPrices, setEnableCustomPrices] = useState(false)
+  const [updateProductPricesPermanently, setUpdateProductPricesPermanently] = useState(false)
   
   const [referenceNo, setReferenceNo] = useState(
     `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, "0")}`,
@@ -249,7 +255,11 @@ export default function AddPurchasePage() {
   const addProductToPurchase = () => {
     if (!selectedProduct) return
 
-    const selectedPrice = getCurrentPrice(selectedProduct, priceType)
+    // Use custom prices if enabled, otherwise use product defaults
+    const effectiveRetailPrice = enableCustomPrices && customRetailPrice !== undefined ? customRetailPrice : selectedProduct.retailPrice
+    const effectiveWholesalePrice = enableCustomPrices && customWholesalePrice !== undefined ? customWholesalePrice : selectedProduct.wholeSalePrice
+    
+    const selectedPrice = priceType === "wholesale" ? effectiveWholesalePrice : effectiveRetailPrice
 
     const itemTotal = selectedProduct.cost * quantity - discount
     const newItem: PurchaseItem = {
@@ -260,6 +270,8 @@ export default function AddPurchasePage() {
         cost: selectedProduct.cost,
         wholeSalePrice: selectedProduct.wholeSalePrice,
         retailPrice: selectedProduct.retailPrice,
+        customRetailPrice: enableCustomPrices ? customRetailPrice : undefined,
+        customWholesalePrice: enableCustomPrices ? customWholesalePrice : undefined,
         selectedPrice,
         priceType,
         quantity,
@@ -273,6 +285,10 @@ export default function AddPurchasePage() {
     setSelectedProductId("")
     setQuantity(1)
     setDiscount(0)
+    setEnableCustomPrices(false)
+    setCustomRetailPrice(undefined)
+    setCustomWholesalePrice(undefined)
+    setUpdateProductPricesPermanently(false)
     setOpen(false)
   }
 
@@ -293,6 +309,14 @@ export default function AddPurchasePage() {
   }
 
   const getCurrentPrice = (product: (typeof products)[0], type: "wholesale" | "retail") => {
+    if (enableCustomPrices) {
+      if (type === "wholesale" && customWholesalePrice !== undefined) {
+        return customWholesalePrice
+      }
+      if (type === "retail" && customRetailPrice !== undefined) {
+        return customRetailPrice
+      }
+    }
     return type === "wholesale" ? product.wholeSalePrice : product.retailPrice
   }
 
@@ -315,6 +339,7 @@ export default function AddPurchasePage() {
 
     const purchaseData = {
       items: purchaseItems.map(item => ({
+        productId: item.productId,
         productName: item.productName,
         productBarcode: item.productBarcode,
         cost: item.cost,
@@ -322,7 +347,9 @@ export default function AddPurchasePage() {
         priceType: item.priceType,
         quantity: item.quantity,
         discount: item.discount,
-        total: item.total
+        total: item.total,
+        customRetailPrice: item.customRetailPrice,
+        customWholesalePrice: item.customWholesalePrice
       })),
       referenceNo,
       subtotal,
@@ -338,8 +365,47 @@ export default function AddPurchasePage() {
       status
     }
 
+    // Check if any items have custom prices
+    const hasCustomPrices = purchaseItems.some(item => 
+      item.customRetailPrice !== undefined || item.customWholesalePrice !== undefined
+    )
+
     try {
-      const response = await fetch('/api/purchase', {
+      // First, update product prices permanently if requested
+      const itemsWithPermanentUpdates = purchaseItems.filter(item => 
+        (item.customRetailPrice !== undefined || item.customWholesalePrice !== undefined) 
+      )
+
+      if (updateProductPricesPermanently && itemsWithPermanentUpdates.length > 0) {
+        for (const item of itemsWithPermanentUpdates) {
+          if (item.customRetailPrice !== undefined || item.customWholesalePrice !== undefined) {
+            const updatePayload: any = {
+              productId: item.productId,
+              warehouseId: warehouseId
+            }
+            
+            if (item.customRetailPrice !== undefined) {
+              updatePayload.retailPrice = item.customRetailPrice
+            }
+            if (item.customWholesalePrice !== undefined) {
+              updatePayload.wholesalePrice = item.customWholesalePrice
+            }
+
+            await fetch('/api/product/update-prices', {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(updatePayload),
+            })
+          }
+        }
+      }
+
+      // Use the appropriate endpoint based on whether custom prices are used
+      const endpoint = hasCustomPrices ? '/api/purchase/create-with-custom-prices' : '/api/purchase'
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -682,11 +748,89 @@ export default function AddPurchasePage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="wholesale">
-                            Wholesale - {formatCurrency(selectedProduct.wholeSalePrice.toFixed(2))}
+                            Wholesale - {formatCurrency(getCurrentPrice(selectedProduct, "wholesale").toFixed(2))}
                           </SelectItem>
-                          <SelectItem value="retail">Retail - {formatCurrency(selectedProduct.retailPrice.toFixed(2))}</SelectItem>
+                          <SelectItem value="retail">Retail - {formatCurrency(getCurrentPrice(selectedProduct, "retail").toFixed(2))}</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {/* Custom Price Controls */}
+                  {selectedProduct && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="enable-custom-prices"
+                          checked={enableCustomPrices}
+                                                  onChange={(e) => {
+                          setEnableCustomPrices(e.target.checked)
+                          if (!e.target.checked) {
+                            setCustomRetailPrice(undefined)
+                            setCustomWholesalePrice(undefined)
+                            setUpdateProductPricesPermanently(false)
+                          } else {
+                            setCustomRetailPrice(selectedProduct.retailPrice)
+                            setCustomWholesalePrice(selectedProduct.wholeSalePrice)
+                          }
+                        }}
+                          className="rounded"
+                        />
+                        <Label htmlFor="enable-custom-prices" className="text-sm font-medium">
+                          Use custom prices for this product
+                        </Label>
+                      </div>
+                      
+                      {enableCustomPrices && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="custom-retail">Custom Retail Price</Label>
+                              <Input
+                                id="custom-retail"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={customRetailPrice || ""}
+                                onChange={(e) => setCustomRetailPrice(parseFloat(e.target.value) || undefined)}
+                                placeholder="Enter retail price"
+                              />
+                              <p className="text-xs text-gray-500">
+                                Original: {formatCurrency(selectedProduct.retailPrice)}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="custom-wholesale">Custom Wholesale Price</Label>
+                              <Input
+                                id="custom-wholesale"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={customWholesalePrice || ""}
+                                onChange={(e) => setCustomWholesalePrice(parseFloat(e.target.value) || undefined)}
+                                placeholder="Enter wholesale price"
+                              />
+                              <p className="text-xs text-gray-500">
+                                Original: {formatCurrency(selectedProduct.wholeSalePrice)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="update-permanently"
+                              checked={updateProductPricesPermanently}
+                              onChange={(e) => setUpdateProductPricesPermanently(e.target.checked)}
+                              className="rounded"
+                            />
+                            <Label htmlFor="update-permanently" className="text-sm">
+                              Update product prices permanently (affects future sales and purchases)
+                            </Label>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -784,11 +928,32 @@ export default function AddPurchasePage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant={item.priceType === "wholesale" ? "default" : "secondary"}>
-                                {item.priceType}
-                              </Badge>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant={item.priceType === "wholesale" ? "default" : "secondary"}>
+                                  {item.priceType}
+                                </Badge>
+                                {(item.customRetailPrice !== undefined || item.customWholesalePrice !== undefined) && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Custom
+                                  </Badge>
+                                )}
+                              </div>
                             </TableCell>
-                            <TableCell>{formatCurrency(item.selectedPrice)}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{formatCurrency(item.selectedPrice)}</span>
+                                {item.priceType === "retail" && item.customRetailPrice !== undefined && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Original: {formatCurrency(item.retailPrice)}
+                                  </span>
+                                )}
+                                {item.priceType === "wholesale" && item.customWholesalePrice !== undefined && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Original: {formatCurrency(item.wholeSalePrice)}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <Input

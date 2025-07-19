@@ -167,23 +167,25 @@ model Purchase {
 }
 
 model PurchaseItem {
-  id            String      @id @default(cuid())
-  productId     String?
-  product       Product?    @relation(fields: [productId], references: [barcode])
-  productName   String
-  cost          Float
-  selectedPrice Float
-  priceType     String
-  quantity      Int
-  discount      Float
-  total         Float
-  profit        Float
-  Warehouses    Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
-  warehousesId  String?
-  sync          Boolean     @default(false) // Sync field
-  syncedAt      DateTime? // When last synced
-  Purchase      Purchase?   @relation(fields: [purchaseId], references: [referenceNo])
-  purchaseId    String?
+  id                   String      @id @default(cuid())
+  productId            String?
+  product              Product?    @relation(fields: [productId], references: [barcode])
+  productName          String
+  cost                 Float
+  selectedPrice        Float
+  priceType            String
+  quantity             Int
+  discount             Float
+  total                Float
+  profit               Float
+  customRetailPrice    Float?      // Custom retail price for this purchase item
+  customWholesalePrice Float?      // Custom wholesale price for this purchase item
+  Warehouses           Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
+  warehousesId         String?
+  sync                 Boolean     @default(false) // Sync field
+  syncedAt             DateTime? // When last synced
+  Purchase             Purchase?   @relation(fields: [purchaseId], references: [referenceNo])
+  purchaseId           String?
 }
 
 model Customer {
