@@ -29,7 +29,7 @@ import { getWareHouseId } from "@/hooks/get-werehouseId"
 import fetchWareHouseData from "@/hooks/fetch-invidual-data"
 import { Loading } from "@/components/loading"
 import { useSession } from "next-auth/react"
-import { usePrintReceipt } from "@/hooks/use-print-quote"
+import { usePrintPurchase } from "@/hooks/use-print-purchase"
 
 // Sample data
 
@@ -103,7 +103,6 @@ export default function AddPurchasePage() {
   const [enableCustomPrices, setEnableCustomPrices] = useState(false)
   const [updateProductPricesPermanently, setUpdateProductPricesPermanently] = useState(false)
   const [endPoint, setEndPoint] = useState("")
-  const { printReceipt } = usePrintReceipt()
     const {data:session} = useSession()
     
   const [referenceNo, setReferenceNo] = useState(
@@ -114,6 +113,7 @@ export default function AddPurchasePage() {
   const [open, setOpen] = useState(false)
 
    const warehouseId = getWareHouseId()
+  const { printPurchaseReceipt } = usePrintPurchase()
           
           const {data:products,loading,error} = fetchWareHouseData("/api/product/list",{warehouseId})
           const {data:suppliers,loading:loadingsuppliers,error:errorsuppliers} = fetchWareHouseData("/api/supplier/list",{warehouseId})
@@ -369,158 +369,37 @@ export default function AddPurchasePage() {
   const handlePrintReceipt = () => {
     if (!createdPurchase) return
 
-    const printWindow = window.open("", "_blank")
-    if (!printWindow) return
-
-    const supplier = suppliers.find((s:any) => s.id === createdPurchase.supplierId)
-    const warehouse = warehouses.find((w:any) => w.id === createdPurchase.warehouseId)
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Purchase Order - ${createdPurchase.invoiceNumber}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .details { margin-bottom: 20px; }
-            .items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            .items th, .items td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            .items th { background-color: #f2f2f2; }
-            .totals { margin-left: auto; width: 300px; }
-            .total-row { display: flex; justify-content: space-between; margin: 5px 0; }
-            .grand-total { font-weight: bold; font-size: 1.2em; border-top: 2px solid #000; padding-top: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>PURCHASE ORDER</h1>
-            <h2>Invoice: ${createdPurchase.invoiceNumber}</h2>
-            <p>Reference: ${createdPurchase.referenceNo}</p>
-            <p>Date: ${new Date(createdPurchase.date).toLocaleDateString()}</p>
-          </div>
-          
-          <div class="details">
-            <h3>Supplier Information:</h3>
-            <p><strong>${supplier?.name}</strong></p>
-            <p>${supplier?.email}</p>
-            <p>${supplier?.phone}</p>
-            <p>${supplier?.address}</p>
-            
-            <h3>Warehouse:</h3>
-            <p><strong>${warehouse?.name}</strong></p>
-            <p>${warehouse?.address}</p>
-          </div>
-
-          <table class="items">
-            <thead>
-              <tr>
-                
-                <th>Product</th>
-                
-                <th>Barcode</th>
-                <th>Cost Price</th>
-                <th>Quantity</th>
-                <th>Discount</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${createdPurchase.items
-                .map(
-                  (item) => `
-                <tr>
-                 
-                  <td>${item.productName}</td>
-                  
-                  <td>${item.productBarcode}</td>
-                  <td>$${item.cost.toFixed(2)}</td>
-                  <td>${item.quantity} ${item.unit}</td>
-                  <td>$${item.discount.toFixed(2)}</td>
-                  <td>$${item.total.toFixed(2)}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-
-          <div class="totals">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span>$${createdPurchase.subtotal.toFixed(2)}</span>
-            </div>
-            <div class="total-row">
-              <span>Tax (${createdPurchase.taxRate}%):</span>
-              <span>$${createdPurchase.taxAmount.toFixed(2)}</span>
-            </div>
-            <div class="total-row">
-              <span>Shipping:</span>
-              <span>$${createdPurchase.shipping.toFixed(2)}</span>
-            </div>
-            <div class="total-row grand-total">
-              <span>Grand Total:</span>
-              <span>$${createdPurchase.grandTotal.toFixed(2)}</span>
-            </div>
-            <div class="total-row">
-              <span>Paid Amount:</span>
-              <span>$${createdPurchase.paidAmount.toFixed(2)}</span>
-            </div>
-            <div class="total-row">
-              <span>Balance:</span>
-              <span>$${(createdPurchase.grandTotal - createdPurchase.paidAmount).toFixed(2)}</span>
-            </div>
-          </div>
-
-          ${
-            createdPurchase.notes
-              ? `
-            <div style="margin-top: 30px;">
-              <h3>Notes:</h3>
-              <p>${createdPurchase.notes}</p>
-            </div>
-          `
-              : ""
-          }
-
-          <div style="margin-top: 50px; text-align: center; color: #666;">
-            <p>Status: ${createdPurchase.status.toUpperCase()} | Payment: ${createdPurchase.paymentStatus.toUpperCase()}</p>
-            <p>Generated on ${new Date().toLocaleString()}</p>
-          </div>
-        </body>
-      </html>
-    `)
-
-    const dateObj = new Date(createdPurchase.date);
-    const formattedDate = dateObj.toISOString().split("T")[0];
-    const formattedTime = dateObj.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
+    const supplier = suppliers?.find((s:any) => s.id === createdPurchase.supplierId)
+    
+    // Prepare receipt data for the new hook
     const receiptData = {
-      invoiceNo: createdPurchase.referenceNo,
-      date: formattedDate,
-      time:formattedTime,
-      customer: supplier?.name,
-      cashier: "",
-      items: createdPurchase.items.map((item:any) => ({
+      referenceNo: createdPurchase.referenceNo,
+      invoiceNo: createdPurchase.invoiceNumber,
+      date: new Date(createdPurchase.date).toLocaleDateString(),
+      time: new Date(createdPurchase.createdAt).toLocaleTimeString(),
+      supplier: supplier?.name || 'Unknown Supplier',
+      warehouse: createdPurchase.warehouseName || 'Current Warehouse',
+      items: createdPurchase.items.map(item => ({
         name: item.productName,
+        productBarcode: item.productBarcode,
         quantity: item.quantity,
-        price: parseInt(item.cost),
+        cost: item.cost,
+        discount: item.discount,
         total: item.total,
+        unit: item.unit
       })),
       subtotal: createdPurchase.subtotal,
-      discount: 0,
-      tax: (createdPurchase.taxAmount),
-      total: (createdPurchase.grandTotal),
-      paid: createdPurchase.paidAmount,
+      taxRate: createdPurchase.taxRate,
+      taxAmount: createdPurchase.taxAmount,
+      shipping: createdPurchase.shipping,
+      total: createdPurchase.grandTotal,
+      paidAmount: createdPurchase.paidAmount,
       balance: createdPurchase.grandTotal - createdPurchase.paidAmount,
-      paymentMethods: "",
+      status: createdPurchase.status,
+      notes: createdPurchase.notes
     }
 
-    printReceipt(receiptData, paperWidth)
-    
+    printPurchaseReceipt(receiptData,"A4")
   }
 
   return (
@@ -1102,7 +981,7 @@ export default function AddPurchasePage() {
               </Button>
               <Button onClick={handlePrintReceipt}>
                 <Printer className="mr-2 h-4 w-4" />
-                Print Purchase Order
+                Print Receipt
               </Button>
             </div>
           </DialogContent>

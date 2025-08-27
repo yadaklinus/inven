@@ -451,6 +451,7 @@ function generateThermalReceipt(data: ReceiptData, settings: ReceiptSettings, pa
         <div class="footer">
           ${settings.footerMessage ? `<div style="font-weight: bold; margin-top: 4px;">${settings.footerMessage}</div>` : ""}
           ${settings.showTimestamp ? `<div style="margin-top: 8px;">Generated: ${new Date().toLocaleString()}</div>` : ""}
+          <div> Powered by CodeGit </div>
         </div>
       </body>
     </html>

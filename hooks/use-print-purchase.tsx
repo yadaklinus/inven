@@ -5,39 +5,35 @@ import { useCallback, useEffect, useState } from "react"
 import { getWareHouseId } from "./get-werehouseId"
 import axios from "axios"
 
-// Define interfaces from the original code
-interface ReceiptItem {
-  id?: string | number; // Added for item number
+// Define interfaces for purchase receipts
+interface PurchaseItem {
+  id?: string | number;
   name: string
+  productBarcode: string
   quantity: number
-  price: number
+  cost: number
+  discount: number
   total: number
+  unit?: string
 }
 
-interface PaymentMethod {
-  id: string
-  method:string
-  amount: number
-  reference?: string
-  notes?: string
-}
-
-interface ReceiptData {
-  invoiceNo: string
+interface PurchaseReceiptData {
+  referenceNo: string
+  invoiceNo?: string
   date: string
   time: string
-  customer: string
-  cashier: string
-  items: ReceiptItem[]
+  supplier: string
+  warehouse: string
+  items: PurchaseItem[]
   subtotal: number
-  discount: number
-  tax: number
+  taxRate: number
+  taxAmount: number
+  shipping: number
   total: number
-  paymentMethods?: PaymentMethod[]
-  totalPaid?: number
-  balance?: number
-  paid?: number // Legacy support
-  paymentMethod?: string // Legacy support
+  paidAmount: number
+  balance: number
+  status: string
+  notes?: string
 }
 
 interface ReceiptSettings {
@@ -58,8 +54,8 @@ interface ReceiptSettings {
   showQrCode?: boolean
   qrCodeContent?: string
   customQrContent?: string
-  showCustomerInfo?: boolean
-  showCashierInfo?: boolean
+  showSupplierInfo?: boolean
+  showWarehouseInfo?: boolean
   showBalance?: boolean
   showTimestamp?: boolean
   showItemNumbers?: boolean
@@ -89,8 +85,8 @@ const DEFAULT_SETTINGS: ReceiptSettings = {
   website: "www.yourcompany.com",
 
   // --- Receipt Content ---
-  receiptTitle: "INVOICE",
-  headerMessage: "Optional message at the top of the receipt.",
+  receiptTitle: "PURCHASE ORDER",
+  headerMessage: "Purchase Order Receipt",
   footerMessage: "Thank you for your business!",
 
   // --- Bank Details (Optional) ---
@@ -104,8 +100,8 @@ const DEFAULT_SETTINGS: ReceiptSettings = {
   showQrCode: false,
   qrCodeContent: "website", // Can be 'website', 'invoiceNo', or 'custom'
   customQrContent: "",    // Used if qrCodeContent is 'custom'
-  showCustomerInfo: true,
-  showCashierInfo: true,
+  showSupplierInfo: true,
+  showWarehouseInfo: true,
   showBalance: true,
   showTimestamp: true,
   showItemNumbers: true,
@@ -158,17 +154,15 @@ function getReceiptStyles(paperSize: "57mm" | "80mm", settings: ReceiptSettings)
   return { width, fontSize, adjustedLineHeight, fontFamily, paperSize };
 }
 
-// --- A4 INVOICE HTML (New Compact Layout) ---
-function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
+// --- A4 PURCHASE ORDER HTML ---
+function generateA4PurchaseOrder(data: PurchaseReceiptData, settings: ReceiptSettings) {
     const fontColor = "#000";
-    const totalPaid = data.totalPaid || 0;
-    const balance = data.total - totalPaid; // Positive if balance is due, negative if change is due
 
     return `
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Invoice - ${data.invoiceNo}</title>
+        <title>Purchase Order - ${data.referenceNo}</title>
         <style>
           @page { 
             size: A4; 
@@ -187,7 +181,7 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          .invoice-container {
+          .purchase-container {
             width: 100%;
             height: 100%;
             padding: 10mm;
@@ -201,7 +195,7 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
             align-items: flex-start;
             padding-bottom: 10px;
             border-bottom: 2px solid #000;
-            flex-shrink: 0; /* Prevents header from shrinking */
+            flex-shrink: 0;
           }
           .company-info {
             display: flex;
@@ -221,32 +215,32 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
             font-size: 10px;
             margin: 2px 0;
           }
-          .invoice-meta {
+          .purchase-meta {
             border: 1px solid #000;
             padding: 5px;
             min-width: 200px;
           }
-          .invoice-meta table {
+          .purchase-meta table {
             width: 100%;
             border-collapse: collapse;
           }
-          .invoice-meta td {
+          .purchase-meta td {
             padding: 2px 4px;
             font-size: 10px;
           }
-          .customer-info {
+          .supplier-info {
             padding: 10px 0;
-            flex-shrink: 0; /* Prevents shrinking */
+            flex-shrink: 0;
           }
           .items-table-container {
-            flex-grow: 1; /* Takes up all available space */
-            overflow: hidden; /* Prevents its own content from overflowing */
+            flex-grow: 1;
+            overflow: hidden;
             position: relative;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Important for consistent column widths */
+            table-layout: fixed;
           }
           .items-table th, .items-table td {
             border: 1px solid #000;
@@ -267,7 +261,7 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            flex-shrink: 0; /* Prevents footer from shrinking */
+            flex-shrink: 0;
           }
           .bank-details {
             font-size: 10px;
@@ -291,7 +285,7 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
         </style>
       </head>
       <body>
-        <div class="invoice-container">
+        <div class="purchase-container">
           <div class="header">
             <div class="company-info">
               ${settings.showLogo && settings.logoUrl ? `<img src="${settings.logoUrl}" alt="Logo" />` : ''}
@@ -301,38 +295,44 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
                 <p class="address">${settings.address}</p>
               </div>
             </div>
-            <div class="invoice-meta">
+            <div class="purchase-meta">
               <table>
-                <tr><td><strong>INVOICE</strong></td><td>${data.invoiceNo}</td></tr>
+                <tr><td><strong>PURCHASE ORDER</strong></td><td>${data.referenceNo}</td></tr>
                 <tr><td><strong>Date</strong></td><td>${data.date} ${data.time}</td></tr>
-                <tr><td><strong>Cashier</strong></td><td>${data.cashier}</td></tr>
+                <tr><td><strong>Warehouse</strong></td><td>${data.warehouse}</td></tr>
                 <tr><td><strong>Items</strong></td><td>${data.items.length}</td></tr>
               </table>
             </div>
           </div>
 
-          <div class="customer-info">
-            <strong>${data.customer}</strong>
+          ${settings.showSupplierInfo ? `
+          <div class="supplier-info">
+            <strong>Supplier: ${data.supplier}</strong>
           </div>
+          ` : ''}
           
           <div class="items-table-container">
             <table class="items-table">
               <thead>
                 <tr>
                   <th class="col-small">#</th>
-                  <th class="col-small">QTY/LB</th>
-                  <th class="col-large">ITEM NAME</th>
-                  <th class="col-medium align-right">PRICE PER</th>
-                  <th class="col-medium align-right">EXTENDED</th>
+                  <th class="col-large">PRODUCT</th>
+                  <th class="col-medium">BARCODE</th>
+                  <th class="col-small">QTY</th>
+                  <th class="col-medium align-right">COST</th>
+                  <th class="col-medium align-right">DISCOUNT</th>
+                  <th class="col-medium align-right">TOTAL</th>
                 </tr>
               </thead>
               <tbody>
                 ${data.items.map((item, index) => `
                   <tr>
                     <td>${index + 1}</td>
-                    <td>${item.quantity}</td>
                     <td>${item.name}</td>
-                    <td class="align-right">${formatCurrency(item.price)}</td>
+                    <td>${item.productBarcode}</td>
+                    <td>${item.quantity}${item.unit ? ' ' + item.unit : ''}</td>
+                    <td class="align-right">${formatCurrency(item.cost)}</td>
+                    <td class="align-right">${formatCurrency(item.discount)}</td>
                     <td class="align-right">${formatCurrency(item.total)}</td>
                   </tr>
                 `).join('')}
@@ -347,27 +347,36 @@ function generateA4Invoice(data: ReceiptData, settings: ReceiptSettings) {
             <div class="totals">
               <table>
                 <tr><td>Sub Total:</td><td class="align-right">${formatCurrency(data.subtotal)}</td></tr>
+                <tr><td>Tax (${data.taxRate}%):</td><td class="align-right">${formatCurrency(data.taxAmount)}</td></tr>
+                <tr><td>Shipping:</td><td class="align-right">${formatCurrency(data.shipping)}</td></tr>
                 <tr class="grand-total"><td>Grand Total:</td><td class="align-right">${formatCurrency(data.total)}</td></tr>
-                <tr><td>Total Paid:</td><td class="align-right">${formatCurrency(data.paid || data.totalPaid || 0)}</td></tr>
-                ${balance > 0 ? `<tr><td><strong>Balance Due:</strong></td><td class="align-right"><strong>${formatCurrency(data.balance)}</strong></td></tr>` : ''}
-                ${balance < 0 ? `<tr><td>Change:</td><td class="align-right">${formatCurrency(Math.abs(balance))}</td></tr>` : ''}
+                <tr><td>Paid Amount:</td><td class="align-right">${formatCurrency(data.paidAmount)}</td></tr>
+                ${data.balance > 0 ? `<tr><td><strong>Balance Due:</strong></td><td class="align-right"><strong>${formatCurrency(data.balance)}</strong></td></tr>` : ''}
+                ${data.balance < 0 ? `<tr><td>Change:</td><td class="align-right">${formatCurrency(Math.abs(data.balance))}</td></tr>` : ''}
               </table>
             </div>
           </div>
+          
+          ${data.notes ? `
+          <div style="margin-top: 20px;">
+            <h3>Notes:</h3>
+            <p>${data.notes}</p>
+          </div>
+          ` : ''}
         </div>
       </body>
     </html>
     `;
 }
 
-// --- THERMAL RECEIPT HTML (for 57mm and 80mm) ---
-function generateThermalReceipt(data: ReceiptData, settings: ReceiptSettings, paperSize: "57mm" | "80mm") {
+// --- THERMAL PURCHASE ORDER HTML (for 57mm and 80mm) ---
+function generateThermalPurchaseOrder(data: PurchaseReceiptData, settings: ReceiptSettings, paperSize: "57mm" | "80mm") {
     const styles = getReceiptStyles(paperSize, settings);
     return `
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Receipt - ${data.invoiceNo}</title>
+        <title>Purchase Order - ${data.referenceNo}</title>
         <style>
           @page { size: ${styles.width} auto; margin: 0; }
           body { 
@@ -379,7 +388,7 @@ function generateThermalReceipt(data: ReceiptData, settings: ReceiptSettings, pa
             padding: 8px; 
             box-sizing: border-box; 
           }
-          .header, .totals, .payment-section, .footer { text-align: center; border-top: 1px dashed #666; padding-top: 8px; margin-top: 8px; }
+          .header, .totals, .supplier-section, .footer { text-align: center; border-top: 1px dashed #666; padding-top: 8px; margin-top: 8px; }
           .header { border-top: none; padding-top: 0; margin-top: 0; }
           .company-name { font-weight: bold; font-size: 1.4em; }
           .total-line { display: flex; justify-content: space-between; margin: 2px 0; }
@@ -400,57 +409,53 @@ function generateThermalReceipt(data: ReceiptData, settings: ReceiptSettings, pa
           </div>
         </div>
         <div class="receipt-title" style="text-align: center; font-weight: bold; margin: 8px 0; border-bottom: 1px dashed #666; padding-bottom: 8px;">
-          ${settings.receiptTitle || "SALES INVOICE"}
+          ${settings.receiptTitle || "PURCHASE ORDER"}
         </div>
-        <div class="invoice-info" style="margin-bottom: 8px;">
-          <div><strong>Invoice:</strong> ${data.invoiceNo}</div>
+        <div class="purchase-info" style="margin-bottom: 8px;">
+          <div><strong>Reference:</strong> ${data.referenceNo}</div>
           <div><strong>Date:</strong> ${data.date} ${data.time}</div>
-          ${settings.showCustomerInfo ? `<div><strong>Customer:</strong> ${data.customer}</div>` : ""}
-          ${settings.showCashierInfo ? `<div><strong>Cashier:</strong> ${data.cashier}</div>` : ""}
+          ${settings.showSupplierInfo ? `<div><strong>Supplier:</strong> ${data.supplier}</div>` : ""}
+          ${settings.showWarehouseInfo ? `<div><strong>Warehouse:</strong> ${data.warehouse}</div>` : ""}
         </div>
         <div class="items">
           <div style="border-top: 1px dashed #666; border-bottom: 1px dashed #666; padding: 4px 0; margin-bottom: 8px; font-weight: bold;">ITEMS</div>
           ${data.items.map((item, index) => `
             <div class="item" style="margin-bottom: 4px;">
               <div class="item-header">${settings.showItemNumbers ? `${index + 1}. ` : ""}${item.name}</div>
+              <div style="font-size: 0.8em; color: #666;">Barcode: ${item.productBarcode}</div>
               <div class="item-details">
-                <span>${item.quantity} x ${formatCurrency(item.price)}</span>
+                <span>${item.quantity}${item.unit ? ' ' + item.unit : ''} x ${formatCurrency(item.cost)}</span>
                 <span>${formatCurrency(item.total)}</span>
               </div>
+              ${item.discount > 0 ? `<div style="font-size: 0.8em; color: #666;">Discount: ${formatCurrency(item.discount)}</div>` : ''}
             </div>
           `).join("")}
         </div>
         <div class="totals">
           <div class="total-line"><span>Subtotal:</span><span>${formatCurrency(data.subtotal)}</span></div>
-          ${data.discount > 0 ? `<div class="total-line"><span>Discount:</span><span>-${formatCurrency(data.discount)}</span></div>` : ""}
-          <div class="total-line"><span>Tax:</span><span>${formatCurrency(data.tax)}</span></div>
+          <div class="total-line"><span>Tax (${data.taxRate}%):</span><span>${formatCurrency(data.taxAmount)}</span></div>
+          <div class="total-line"><span>Shipping:</span><span>${formatCurrency(data.shipping)}</span></div>
           <div class="total-line grand-total"><span>TOTAL:</span><span>${formatCurrency(data.total)}</span></div>
         </div>
-        <div class="payment-section">
+        <div class="supplier-section">
           <div style="font-weight: bold; margin-bottom: 4px;">PAYMENT</div>
-          ${(data.paymentMethods && data.paymentMethods.length > 0)
-            ? data.paymentMethods.map(pm => `
-                <div class="total-line">
-                  <span>${pm.method.replace("_", " ")}:</span>
-                  <span>${formatCurrency(pm.amount)}</span>
-                </div>`
-              ).join("")
-            : `<div class="total-line">
-                 <span>${data.paymentMethod || "Cash"}:</span>
-                 <span>${formatCurrency(data.paid || data.totalPaid || 0)}</span>
-               </div>`
-          }
-          <div class="total-line" style="font-weight: bold; margin-top: 8px;">
-            <span>Total Paid:</span>
-            <span>${formatCurrency(data.paid || data.totalPaid || 0)}</span>
+          <div class="total-line">
+            <span>Paid Amount:</span>
+            <span>${formatCurrency(data.paidAmount)}</span>
           </div>
-          ${settings.showBalance && data.balance && data.balance !== 0 ? `
+          ${settings.showBalance && data.balance !== 0 ? `
             <div class="total-line"><span>Balance:</span><span>${formatCurrency(Math.abs(data.balance))}</span></div>
           ` : ""}
         </div>
         <div class="footer">
           ${settings.footerMessage ? `<div style="font-weight: bold; margin-top: 4px;">${settings.footerMessage}</div>` : ""}
           ${settings.showTimestamp ? `<div style="margin-top: 8px;">Generated: ${new Date().toLocaleString()}</div>` : ""}
+          ${data.notes ? `
+          <div style="margin-top: 8px; border-top: 1px dashed #666; padding-top: 8px;">
+            <div style="font-weight: bold;">Notes:</div>
+            <div style="font-size: 0.8em;">${data.notes}</div>
+          </div>
+          ` : ''}
         </div>
       </body>
     </html>
@@ -458,7 +463,7 @@ function generateThermalReceipt(data: ReceiptData, settings: ReceiptSettings, pa
 }
 
 // --- Main Hook Definition ---
-export function usePrintReceipt() {
+export function usePrintPurchase() {
   const warehousesId = getWareHouseId()
   const [settings, setSettings] = useState<ReceiptSettings>(DEFAULT_SETTINGS)
   const [isLoading, setIsLoading] = useState(true)
@@ -490,8 +495,8 @@ export function usePrintReceipt() {
     fetchSettings()
   }, [warehousesId])
 
-  const printReceipt = useCallback(
-    async (data: ReceiptData, paperWidth?: "57mm" | "80mm" | "A4") => {
+  const printPurchaseReceipt = useCallback(
+    async (data: PurchaseReceiptData, paperWidth:"A4") => {
       if (isLoading) {
         alert("Receipt settings are still loading. Please wait a moment.")
         return
@@ -511,8 +516,8 @@ export function usePrintReceipt() {
         
         // --- HTML Generation ---
         const html = (effectivePaperWidth === 'A4') 
-            ? generateA4Invoice(data, settings)
-            : generateThermalReceipt(data, settings, effectivePaperWidth);
+            ? generateA4PurchaseOrder(data, settings)
+            : generateThermalPurchaseOrder(data, settings, effectivePaperWidth);
 
         printWindow.document.write(html)
         printWindow.document.close()
@@ -526,7 +531,7 @@ export function usePrintReceipt() {
           }, 250)
         }
       } catch (e) {
-        console.error("Error generating or printing receipt:", e)
+        console.error("Error generating or printing purchase receipt:", e)
         alert("An unexpected error occurred while printing.")
         printWindow.close()
       }
@@ -534,5 +539,5 @@ export function usePrintReceipt() {
     [settings, isLoading, error]
   )
 
-  return { printReceipt, isLoading, error }
+  return { printPurchaseReceipt, isLoading, error }
 }
