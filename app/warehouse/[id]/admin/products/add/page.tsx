@@ -208,41 +208,7 @@ export default function AddProductPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Supplier
-                    <Button variant="outline" size="sm">
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier">Select Supplier</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Supplier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="supplier1">ABC Electronics</SelectItem>
-                        <SelectItem value="supplier2">XYZ Components</SelectItem>
-                        <SelectItem value="supplier3">Tech Solutions Ltd</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier-part-number">Supplier Part Number</Label>
-                    <Input id="supplier-part-number" placeholder="Enter part number" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier-price">Supplier Price</Label>
-                    <Input id="supplier-price" type="number" placeholder="0.00" />
-                  </div>
-                </CardContent>
-              </Card>
+            
             </div>
           </div>
 

@@ -29,6 +29,7 @@ import { getWareHouseId } from "@/hooks/get-werehouseId"
 import fetchWareHouseData from "@/hooks/fetch-invidual-data"
 import { Loading } from "@/components/loading"
 import { useSession } from "next-auth/react"
+import { usePrintReceipt } from "@/hooks/use-print-quote"
 
 // Sample data
 
@@ -102,6 +103,7 @@ export default function AddPurchasePage() {
   const [enableCustomPrices, setEnableCustomPrices] = useState(false)
   const [updateProductPricesPermanently, setUpdateProductPricesPermanently] = useState(false)
   const [endPoint, setEndPoint] = useState("")
+  const { printReceipt } = usePrintReceipt()
     const {data:session} = useSession()
     
   const [referenceNo, setReferenceNo] = useState(
@@ -488,8 +490,37 @@ export default function AddPurchasePage() {
       </html>
     `)
 
-    printWindow.document.close()
-    printWindow.print()
+    const dateObj = new Date(createdPurchase.date);
+    const formattedDate = dateObj.toISOString().split("T")[0];
+    const formattedTime = dateObj.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const receiptData = {
+      invoiceNo: createdPurchase.referenceNo,
+      date: formattedDate,
+      time:formattedTime,
+      customer: supplier?.name,
+      cashier: "",
+      items: createdPurchase.items.map((item:any) => ({
+        name: item.productName,
+        quantity: item.quantity,
+        price: parseInt(item.cost),
+        total: item.total,
+      })),
+      subtotal: createdPurchase.subtotal,
+      discount: 0,
+      tax: (createdPurchase.taxAmount),
+      total: (createdPurchase.grandTotal),
+      paid: createdPurchase.paidAmount,
+      balance: createdPurchase.grandTotal - createdPurchase.paidAmount,
+      paymentMethods: "",
+    }
+
+    printReceipt(receiptData, paperWidth)
+    
   }
 
   return (

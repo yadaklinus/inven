@@ -209,10 +209,7 @@ export default function ViewQuotationPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
+         
           {quotation.status !== "converted" && (
             <>
               <Link href={`${endPoint}/quotations/${quotation.quotationNo}/edit`}>
