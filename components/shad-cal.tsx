@@ -324,14 +324,7 @@ export function CalculatorCard({ className = "" }: { className?: string }) {
         </div>
 
         <Separator/>
-        <div className="grid grid-cols-3 gap-2">
-          <Button variant="secondary" onClick={() => applyDiscount(5)}>Disc 5%</Button>
-          <Button variant="secondary" onClick={() => applyDiscount(10)}>Disc 10%</Button>
-          <Button variant="secondary" onClick={() => applyDiscount(20)}>Disc 20%</Button>
-          <Button variant="secondary" onClick={() => addVAT(7.5)}>+VAT 7.5%</Button>
-          <Button variant="secondary" onClick={() => addVAT(10)}>+VAT 10%</Button>
-          <Button variant="secondary" onClick={() => removeVAT(7.5)}>−VAT 7.5%</Button>
-        </div>
+        
 
         <div>
           <div className="text-sm font-medium mb-1 flex items-center gap-2"><History className="w-4 h-4"/>History</div>
