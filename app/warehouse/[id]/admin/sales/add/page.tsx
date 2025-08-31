@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -144,6 +144,59 @@ export default function AddSalePage() {
   const { printReceipt } = usePrintReceipt()
   const warehouseId = getWareHouseId()
 
+  const quantityInputRef = useRef<HTMLInputElement>(null)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const productSearchRef = useRef<HTMLButtonElement>(null)
+  const paymentAmountRef = useRef<HTMLInputElement>(null)
+  const finalizeSaleButtonRef = useRef<HTMLButtonElement>(null)
+  const allButtonRef = useRef<HTMLButtonElement>(null)
+  const addPaymentButtonRef = useRef<HTMLButtonElement>(null)
+  const printButtonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === "n") {
+        event.preventDefault()
+        router.push(`/warehouse/${warehouseId}/admin/sales/add`)
+      }
+      if (event.ctrlKey && event.key === "s") {
+        event.preventDefault()
+        setQuantity("")
+        productSearchRef.current?.click()
+      }
+      if (event.ctrlKey && event.key === "p") {
+        event.preventDefault()
+        printButtonRef.current?.click()
+      }
+      if (event.ctrlKey && event.key === "f") {
+        event.preventDefault()
+        finalizeSaleButtonRef.current?.click()
+      }
+      if (event.ctrlKey && event.key === "d") {
+        event.preventDefault()
+        allButtonRef.current?.click()
+        addPaymentButtonRef.current?.click()
+      }
+      if (event.ctrlKey && event.key === "c") {
+        event.preventDefault()
+        if (customers && customers.length > 0) {
+          const currentIndex = customers.findIndex((c: any) => c.id === selectedCustomer)
+          const nextIndex = (currentIndex + 1) % customers.length
+          handleCustomerChange(customers[nextIndex].id)
+        }
+      }
+      if (event.ctrlKey && event.key === "q") {
+        event.preventDefault()
+        setQuantity("")
+        quantityInputRef.current?.focus()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [router, warehouseId])
         
         const {data:products,loading,error} = fetchWareHouseData("/api/product/list",{warehouseId})
         const {data:customers,loading:loadingCustomers,error:errorCustomers} = fetchWareHouseData("/api/customer/list",{warehouseId})
@@ -175,8 +228,10 @@ export default function AddSalePage() {
     return type === "wholesale" ? product.wholeSalePrice : product.retailPrice
   }
 
-  const addProductToSale = () => {
+  const addProductToSale = (isBarcode = false) => {
     if (!selectedProduct) return
+
+    const currentQuantity = isBarcode ? 1 : quantity
 
     const selectedPrice = getCurrentPrice(selectedProduct, priceType)
 
@@ -189,13 +244,13 @@ export default function AddSalePage() {
       // Update existing item
       const updatedItems = [...saleItems]
       const existingItem = updatedItems[existingItemIndex]
-      existingItem.quantity += quantity
+      existingItem.quantity += currentQuantity
       existingItem.discount += discount
       existingItem.total = existingItem.selectedPrice * existingItem.quantity - existingItem.discount
       setSaleItems(updatedItems)
     } else {
       // Add new item
-      const itemTotal = selectedPrice * quantity - discount
+      const itemTotal = selectedPrice * currentQuantity - discount
       const newItem: SaleItem = {
         id: `ITEM-${Date.now()}`,
         productId: selectedProduct.id,
@@ -206,7 +261,7 @@ export default function AddSalePage() {
         retailPrice: selectedProduct.retailPrice,
         selectedPrice,
         priceType,
-        quantity,
+        quantity: currentQuantity,
         discount,
         total: itemTotal,
         unit: selectedProduct.unit,
@@ -459,7 +514,22 @@ export default function AddSalePage() {
     handleCloseSuccessDialog()
     router.push(`${endPoint}/sales/list`)
   }
-
+  const handleProductSelect = (productId: string) => {
+    setSelectedProductId(productId)
+    const product = products.find((p: any) => p.id === productId)
+    if (product) {
+      // Barcode scanner logic
+      const isBarcodeScan = quantity === "" || quantity === 1
+      if (isBarcodeScan) {
+        setQuantity(1)
+        addProductToSale(true)
+      } else {
+        quantityInputRef.current?.focus()
+      }
+    }
+    setOpen(false)
+    setTimeout(() => quantityInputRef.current?.focus(), 0)
+  }
   return (
    <>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -537,7 +607,8 @@ export default function AddSalePage() {
                     <Label>Product</Label>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
-                        <Button
+                      <Button
+                          ref={productSearchRef}
                           variant="outline"
                           role="combobox"
                           aria-expanded={open}
@@ -561,13 +632,7 @@ export default function AddSalePage() {
                                   <CommandItem
                                     key={product.id}
                                     value={`${product.name} ${product.barcode} ${product.unit}`} // include searchable fields here
-                                    onSelect={(currentValue) => {
-                                      const selected = products.find((p:any) =>
-                                        `${p.name} ${p.barcode} ${p.unit}` === currentValue
-                                      )?.id
-                                      setSelectedProductId(selected || "")
-                                      setOpen(false)
-                                    }}
+                                    onSelect={() => handleProductSelect(product.id)}
                                     className="flex flex-col items-start gap-1 p-3"
                                   >
                                     {/* Render actual searchable text here so the filter works */}
@@ -630,9 +695,14 @@ export default function AddSalePage() {
                         <Input
                           id="quantity"
                           type="number"
-                          
+                          ref={quantityInputRef}
                           max={selectedProduct.quantity}
                           value={quantity}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              addButtonRef.current?.click()
+                            }
+                          }}
                           onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 1)}
                         />
                       </div>
@@ -647,8 +717,9 @@ export default function AddSalePage() {
                         />
                       </div>
                       <div className="flex items-end">
-                        <Button
-                          onClick={addProductToSale}
+                      <Button
+                          ref={addButtonRef}
+                          onClick={() => addProductToSale()}
                           className="w-full"
                           disabled={selectedProduct.quantity === 0 || quantity > selectedProduct.quantity}
                         >
@@ -838,12 +909,13 @@ export default function AddSalePage() {
                       <div className="space-y-2">
                         <Label>Amount</Label>
                         <Input
+                          ref={paymentAmountRef}
                           type="number"
                           placeholder="0.00"
                           value={currentPaymentAmount}
                           onChange={(e) => setCurrentPaymentAmount(e.target.value)}
                         />
-                        <Button onClick={()=>setCurrentPaymentAmount(grandTotal)}>All</Button>&nbsp;
+                        <Button ref={allButtonRef} onClick={()=>setCurrentPaymentAmount(grandTotal)}>All</Button>&nbsp;
                         <Button onClick={()=>setCurrentPaymentAmount(grandTotal/2)}>Half</Button>
                       </div>
                       <div className="space-y-2">
@@ -865,7 +937,7 @@ export default function AddSalePage() {
                       />
                     </div>
 
-                    <Button onClick={addPaymentMethod} className="w-full" size="sm">
+                    <Button ref={addPaymentButtonRef} onClick={addPaymentMethod} className="w-full" size="sm">
                       <Plus className="mr-2 h-4 w-4" />
                       Add Payment
                     </Button>
@@ -935,7 +1007,8 @@ export default function AddSalePage() {
           {/* Action Buttons */}
           <div className="flex justify-end gap-4">
 
-            <Button
+          <Button
+              ref={finalizeSaleButtonRef}
               onClick={handleFormSubmit}
               disabled={saleItems?.length === 0 || !selectedCustomer || paymentMethods.length === 0 || isSubmitting}
               className="min-w-[140px]"
@@ -987,7 +1060,7 @@ export default function AddSalePage() {
               <div className="flex gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="flex-1">
+                    <Button ref={printButtonRef} className="flex-1">
                       <Printer className="mr-2 h-4 w-4" />
                       Print Receipt
                     </Button>

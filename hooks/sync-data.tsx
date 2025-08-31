@@ -12,7 +12,7 @@ interface SyncStatus {
   retryCount?: number;
 }
 
-export function useAutoSync(url = "/api/syncNew", interval = 60000) {
+export function useAutoSync(url = "/api/syncNew", interval = 90000) {
   const [syncState, setSyncState] = useState<SyncStatus>({
     status: false,
     loading: true,
