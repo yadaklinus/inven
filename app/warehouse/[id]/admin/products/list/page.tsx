@@ -49,6 +49,8 @@ import { Package, Search, Filter, Plus, MoreHorizontal, Edit, Trash2, Eye, Downl
 import { getWareHouseId } from "@/hooks/get-werehouseId"
 import fetchWareHouseData from "@/hooks/fetch-invidual-data"
 import { Loading } from "@/components/loading"
+import { usePaginatedProducts } from "@/hooks/use-paginated-products"
+import { Pagination } from "@/components/pagination"
 import { formatCurrency } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -57,25 +59,29 @@ import axios from "axios";
 
 
 export default function ListProductsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-   const [endpoint,setEndPoint] = useState("")
-const [openModalId, setOpenModalId] = useState(null);
-
-    const {data:session} = useSession()
-
+  const [endpoint, setEndPoint] = useState("")
+  const [openModalId, setOpenModalId] = useState(null);
+  const { data: session } = useSession()
   const warehouseId = getWareHouseId()
 
-  const {data:productsData,loading,error,refetch} = fetchWareHouseData("/api/product/list",{warehouseId})
-  useEffect(()=>{
+  const {
+    products: productsData,
+    loading,
+    error,
+    pagination,
+    filters,
+    goToPage,
+    nextPage,
+    prevPage,
+    updateFilters,
+    refresh
+  } = usePaginatedProducts({ warehouseId, limit: 20 })
+
+  useEffect(() => {
     setEndPoint(`/warehouse/${warehouseId}/${session?.user?.role}`)
-  },[session,warehouseId])
+  }, [session, warehouseId])
 
-
-  if(!productsData) return (
-    <Loading/>
-  )
+  if (loading && productsData.length === 0) return <Loading />
 
   const handleOpen = (id:any) => {
     setOpenModalId(id);
@@ -88,14 +94,14 @@ const [openModalId, setOpenModalId] = useState(null);
   };
 
 
-  const handleDelete = async (productId: string) => {
+    const handleDelete = async (productId: string) => {
      console.log(productId)
   
      await axios.post("/api/product/delete",{productId})
      
-  
+
      setOpenModalId(null);
-     refetch()
+     refresh()
     }
   
   
@@ -109,15 +115,8 @@ const [openModalId, setOpenModalId] = useState(null);
   //   main()
   // },[warehouseId])
 
-  const filteredProducts = productsData.filter((product:any) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.barcode.toLowerCase().includes(searchTerm.toLowerCase()) 
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
-
-    return matchesSearch && matchesCategory && matchesStatus
-  })
+  // Products are already filtered by the API, so we use them directly
+  const filteredProducts = productsData
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -267,9 +266,9 @@ const [openModalId, setOpenModalId] = useState(null);
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder="Search by name, code, or brand..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search by name, barcode, or description..."
+                      value={filters.search}
+                      onChange={(e) => updateFilters({ search: e.target.value })}
                       className="pl-8"
                     />
                   </div>
@@ -277,7 +276,7 @@ const [openModalId, setOpenModalId] = useState(null);
                 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={filters.statusFilter} onValueChange={(value) => updateFilters({ statusFilter: value })}>
                     <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
@@ -289,7 +288,11 @@ const [openModalId, setOpenModalId] = useState(null);
                     </SelectContent>
                   </Select>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => updateFilters({ search: '', statusFilter: 'all', categoryFilter: 'all' })}
+                >
                   <Filter className="mr-2 h-4 w-4" />
                   Clear Filters
                 </Button>
@@ -302,98 +305,98 @@ const [openModalId, setOpenModalId] = useState(null);
             <CardHeader>
               <CardTitle>Products List</CardTitle>
               <CardDescription>
-                Showing {filteredProducts.length} of {productsData.length} products
+                Showing {filteredProducts.length} of {pagination.totalCount} products (Page {pagination.currentPage} of {pagination.totalPages})
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Barcode</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Wholesale Price</TableHead>
-                    <TableHead>Retail Price</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                    {/* <TableHead>Delete</TableHead> */}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product:any) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{product.barcode}</TableCell>
-                      <TableCell>{formatCurrency(product.cost)}</TableCell>
-                      <TableCell>{formatCurrency(product.wholeSalePrice)}</TableCell>
-                      <TableCell>{formatCurrency(product.retailPrice.toFixed(2))}</TableCell>
-                      <TableCell>{product.quantity}</TableCell>                      
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            
-                            <DropdownMenuItem asChild>
-                              <Link href={`${endpoint}/products/${product.id}/stock-tracking`}>
-                                <Activity className="mr-2 h-4 w-4" />
-                                Stock Tracking
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/warehouse/${warehouseId}/admin/products/edit/${product.id}`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Product
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                            
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                      {/* <TableCell>
-                      <Button className="bg-red-500" variant="ghost" size="sm" onClick={() => handleOpen(product.id)} >
-                              <Trash className="h-4 w-4" />
-                                <Modal
-                                    isOpen={openModalId === product.id}
-                                    onOpenChange={handleClose}
-                                    backdrop="opaque"
-                                    classNames={{
-                                      backdrop: "bg-linear-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
-                                    }}
-                                  >
-                                    <ModalContent>
-                                      {(onClose) => (
-                                        <>
-                                          <ModalHeader>{product.name}</ModalHeader>
-                                          <ModalBody>
-                                            <p>{product.name}</p>
-                                          </ModalBody>
-                                          <ModalFooter>
-                                            <Button color="danger" onClick={onClose}>
-                                              Close
-                                            </Button>
-                                            <Button color="primary" onClick={() => {handleDelete(product.id)}}>
-                                              Delete
-                                            </Button>
-                                          </ModalFooter>
-                                        </>
-                                      )}
-                                    </ModalContent>
-                                  </Modal>
-                          </Button>
-                      </TableCell> */}
+              <div className="relative">
+                {loading && (
+                  <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+                      <span className="text-sm text-muted-foreground">Loading products...</span>
+                    </div>
+                  </div>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Barcode</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Wholesale Price</TableHead>
+                      <TableHead>Retail Price</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          {loading ? "Loading products..." : "No products found"}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredProducts.map((product:any) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>{product.barcode}</TableCell>
+                          <TableCell>{formatCurrency(product.cost)}</TableCell>
+                          <TableCell>{formatCurrency(product.wholeSalePrice)}</TableCell>
+                          <TableCell>{formatCurrency(product.retailPrice.toFixed(2))}</TableCell>
+                          <TableCell>
+                            <span className={getStockColor(product.quantity)}>
+                              {product.quantity}
+                            </span>
+                          </TableCell>                      
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`${endpoint}/products/${product.id}/stock-tracking`}>
+                                    <Activity className="mr-2 h-4 w-4" />
+                                    Stock Tracking
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/warehouse/${warehouseId}/admin/products/edit/${product.id}`}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Product
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-red-600">
+                                  {/* Delete action can be added here */}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Pagination */}
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalCount={pagination.totalCount}
+                hasNext={pagination.hasNext}
+                hasPrev={pagination.hasPrev}
+                onPageChange={goToPage}
+                loading={loading}
+                limit={pagination.limit}
+              />
             </CardContent>
           </Card>
         </div>

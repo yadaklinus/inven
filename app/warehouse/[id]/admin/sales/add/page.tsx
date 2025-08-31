@@ -39,6 +39,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn, formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { OptimizedProductSelector } from "@/components/optimized-product-selector"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 import { getWareHouseId } from "@/hooks/get-werehouseId"
@@ -161,7 +162,7 @@ export default function AddSalePage() {
       if (event.ctrlKey && event.key === "s") {
         event.preventDefault()
         setQuantity("")
-        productSearchRef.current?.click()
+        barcodeInputRef.current?.focus()
       }
       if (event.ctrlKey && event.key === "p") {
         event.preventDefault()
@@ -196,23 +197,26 @@ export default function AddSalePage() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [router, warehouseId])
+  }, [router, warehouseId, customers, selectedCustomer])
         
-        const {data:products,loading,error} = fetchWareHouseData("/api/product/list",{warehouseId})
         const {data:customers,loading:loadingCustomers,error:errorCustomers} = fetchWareHouseData("/api/customer/list",{warehouseId})
+        const [selectedProductData, setSelectedProductData] = useState<any>(null)
+  const [productCache, setProductCache] = useState<Map<string, any>>(new Map())
+  const [barcodeInput, setBarcodeInput] = useState("")
+  const barcodeInputRef = useRef<HTMLInputElement>(null)
 
         useEffect(()=>{
           setEndPoint(`/warehouse/${warehouseId}/${session?.user?.role}`)
         },[session,warehouseId])
 
 
-         if(!products && !customers) return (
+         if(!customers) return (
           <Loading/>
          )
 
          
          console.log(customers)
-  const selectedProduct = products?.find((p:any) => p.id === selectedProductId)
+  const selectedProduct = selectedProductData
   const selectedCustomerData = customers?.find((c:any) => c.id === selectedCustomer)
 
   // Auto-set price type based on customer type
@@ -438,36 +442,37 @@ export default function AddSalePage() {
         totalPaid,
         balance,
         notes,
-        cashier: "Admin User",
+        cashier: session?.user?.name || "Admin User",
         warehouseId
       }
 
-      // Simulate API call to save sale
-      console.log("Saving sale data:", saleData)
-
-      // Simulate API delay
-      await axios.post("/api/sale",saleData)
-
-      // Update product stock (in real app, this would be handled by the API)
-      saleItems?.forEach((item) => {
-        const product = products?.find((p:any) => p.id === item.productId)
-        if (product) {
-          product.quantity -= item.quantity
-        }
-      })
-
-      // Set completed sale data and show success dialog
+      // Optimistic UI update - show success immediately
       setCompletedSale(saleData)
       setShowSuccessDialog(true)
 
-      // Reset form
+      // Reset form immediately for faster UX
       setSaleItems([])
       setSelectedCustomer("")
+      setSelectedProductData(null)
+      setSelectedProductId("")
       setPaymentMethods([])
       setNotes("")
       setTaxRate(10)
+      setBarcodeInput("")
+      
+      // Clear product cache periodically to prevent memory issues
+      if (productCache.size > 100) {
+        setProductCache(new Map())
+      }
+
+      // Save to API in background
+      axios.post("/api/sale", saleData).catch((error) => {
+        console.error("Error saving sale:", error)
+        // Could implement retry logic or offline storage here
+      })
+
     } catch (error) {
-      console.error("Error saving sale:", error)
+      console.error("Error completing sale:", error)
       alert("Error completing sale. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -514,21 +519,74 @@ export default function AddSalePage() {
     handleCloseSuccessDialog()
     router.push(`${endPoint}/sales/list`)
   }
-  const handleProductSelect = (productId: string) => {
+  const handleProductSelect = async (productId: string) => {
     setSelectedProductId(productId)
-    const product = products.find((p: any) => p.id === productId)
-    if (product) {
-      // Barcode scanner logic
-      const isBarcodeScan = quantity === "" || quantity === 1
-      if (isBarcodeScan) {
-        setQuantity(1)
-        addProductToSale(true)
-      } else {
-        quantityInputRef.current?.focus()
+    
+    // Check cache first
+    let product = productCache.get(productId)
+    
+    if (!product) {
+      // Fetch the selected product data
+      try {
+        const response = await axios.post('/api/product/get', { productId })
+        product = response.data
+        
+        // Cache the product for future use
+        setProductCache(prev => new Map(prev).set(productId, product))
+      } catch (error) {
+        console.error('Error fetching product:', error)
+        return
       }
     }
+    
+    setSelectedProductData(product)
+    
+    // Barcode scanner logic
+    const isBarcodeScan = quantity === "" || quantity === 1
+    if (isBarcodeScan) {
+      setQuantity(1)
+      addProductToSale(true)
+    } else {
+      quantityInputRef.current?.focus()
+    }
+    
     setOpen(false)
     setTimeout(() => quantityInputRef.current?.focus(), 0)
+  }
+
+  const handleBarcodeSubmit = async () => {
+    if (!barcodeInput.trim()) return
+
+    try {
+      // Search for product by barcode
+      const response = await axios.post('/api/product/search', {
+        warehouseId,
+        search: barcodeInput,
+        page: 1,
+        limit: 1
+      })
+
+      const products = response.data.products
+      if (products.length > 0) {
+        const product = products[0]
+        // Cache the product
+        setProductCache(prev => new Map(prev).set(product.id, product))
+        setSelectedProductData(product)
+        setSelectedProductId(product.id)
+        
+        // Auto-add with quantity 1
+        setQuantity(1)
+        setBarcodeInput("")
+        addProductToSale(true)
+      } else {
+        alert("Product not found with this barcode")
+        setBarcodeInput("")
+      }
+    } catch (error) {
+      console.error('Error searching product by barcode:', error)
+      alert("Error searching for product")
+      setBarcodeInput("")
+    }
   }
   return (
    <>
@@ -556,9 +614,19 @@ export default function AddSalePage() {
         </header>
 
         <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6 text-blue-600" />
-            <h1 className="text-3xl font-bold text-blue-600">New Sale</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="h-6 w-6 text-blue-600" />
+              <h1 className="text-3xl font-bold text-blue-600">New Sale</h1>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <div className="flex flex-wrap gap-4">
+                <span><kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+S</kbd> Quick Scan</span>
+                <span><kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+Q</kbd> Quantity</span>
+                <span><kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+F</kbd> Complete Sale</span>
+                <span><kbd className="px-2 py-1 bg-muted rounded text-xs">Ctrl+N</kbd> New Sale</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
@@ -602,71 +670,53 @@ export default function AddSalePage() {
                   <CardDescription>Select a product to add to the sale</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Product Combobox */}
+                  {/* Quick Barcode Entry */}
                   <div className="space-y-2">
-                    <Label>Product</Label>
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                      <Button
-                          ref={productSearchRef}
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-full justify-between bg-transparent"
-                        >
-                          {selectedProductId
-                            ? products?.find((product:any) => product.id === selectedProductId)?.name
-                            : "Select product..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Search products?..." className="h-9" />
-                          <CommandList>
-                            <CommandEmpty>No product found.</CommandEmpty>
-                            <CommandGroup>
-                              {products?.map((product:any) => {
-                                const stockStatus = getStockStatus(product.quantity)
-                                return (
-                                  <CommandItem
-                                    key={product.id}
-                                    value={`${product.name} ${product.barcode} ${product.unit}`} // include searchable fields here
-                                    onSelect={() => handleProductSelect(product.id)}
-                                    className="flex flex-col items-start gap-1 p-3"
-                                  >
-                                    {/* Render actual searchable text here so the filter works */}
-                                    <div className="sr-only">{`${product.name} ${product.barcode} ${product.unit}`}</div>
+                    <Label htmlFor="barcode">Quick Barcode Entry (Ctrl+S)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="barcode"
+                        ref={barcodeInputRef}
+                        placeholder="Scan or enter barcode..."
+                        value={barcodeInput}
+                        onChange={(e) => setBarcodeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleBarcodeSubmit()
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button 
+                        onClick={handleBarcodeSubmit} 
+                        disabled={!barcodeInput.trim()}
+                        size="sm"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
 
-                                    <div className="flex items-center justify-between w-full">
-                                      <span className="font-medium">{product.name}</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground">
-                                          W: {formatCurrency(product.wholeSalePrice)}
-                                        </span>
-                                        <span className="font-semibold">R: {formatCurrency(product.retailPrice)}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
-                                      <span>
-                                        {product.barcode} • {product.unit}
-                                      </span>
-                                      <span className={stockStatus.color}>{product.quantity} in stock</span>
-                                    </div>
-                                    <Check
-                                      className={cn(
-                                        "ml-auto h-4 w-4",
-                                        selectedProductId === product.id ? "opacity-100" : "opacity-0",
-                                      )}
-                                    />
-                                  </CommandItem>
-                                )
-                              })}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or search products</span>
+                    </div>
+                  </div>
+
+                  {/* Product Selector */}
+                  <div className="space-y-2">
+                    <Label>Product Search</Label>
+                    <OptimizedProductSelector
+                      warehouseId={warehouseId}
+                      selectedProductId={selectedProductId}
+                      onProductSelect={handleProductSelect}
+                      open={open}
+                      onOpenChange={setOpen}
+                      placeholder="Select product..."
+                    />
                   </div>
 
                   {/* Price Type Selection */}
