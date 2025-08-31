@@ -1,35 +1,69 @@
 import { PrismaClient as OfflinePrismaClient } from "@/prisma/generated/offline";
 import { PrismaClient as OnlinePrismaClient } from "@/prisma/generated/online";
+import pMap from "p-map";
 
+// Optimized database clients with connection pooling
 const offlineDb = new OfflinePrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
-});
-const onlineDb = new OnlinePrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
+  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL_OFFLINE
+    }
+  }
 });
 
-// Ensure connections
-async function ensureConnections() {
-  try {
-    await Promise.all([
-      offlineDb.$connect(),
-      onlineDb.$connect()
-    ]);
-    console.log("Sync service: Both database clients connected");
-  } catch (error) {
-    console.error("Sync service: Failed to connect database clients:", error);
-    throw new Error("Database connection failed in sync service");
+const onlineDb = new OnlinePrismaClient({
+  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL_ONLINE
+    }
+  }
+});
+
+// Enhanced connection management with retry logic
+async function ensureConnections(retries = 3): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await Promise.all([
+        offlineDb.$connect(),
+        onlineDb.$connect()
+      ]);
+      console.log("Sync service: Both database clients connected successfully");
+      return;
+    } catch (error) {
+      console.error(`Sync service: Connection attempt ${attempt}/${retries} failed:`, error);
+      if (attempt === retries) {
+        throw new Error(`Database connection failed after ${retries} attempts`);
+      }
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+    }
   }
 }
 
-// Initialize connections
-ensureConnections().catch(console.error);
+// Initialize connections with error handling
+ensureConnections().catch(error => {
+  console.error("Critical: Failed to initialize database connections:", error);
+});
 
 export interface SyncResult {
   success: boolean;
   syncedTables: string[];
   errors: string[];
   totalSynced: number;
+  metrics: {
+    totalTime: number;
+    entityTimes: Record<string, number>;
+    recordsPerSecond: number;
+  };
+  timestamp: string;
+}
+
+interface BatchSyncOptions {
+  concurrency?: number;
+  batchSize?: number;
+  enableMetrics?: boolean;
 }
 
 export class DataSyncService {
@@ -44,13 +78,21 @@ export class DataSyncService {
     this.isOnline = isOnline;
   }
 
-  async syncAllData(): Promise<SyncResult> {
+  async syncAllData(options: BatchSyncOptions = {}): Promise<SyncResult> {
+    const { 
+      concurrency = 15, 
+      batchSize = 1000, 
+      enableMetrics = true 
+    } = options;
+
     if (!this.isOnline) {
       return {
         success: false,
         syncedTables: [],
         errors: ["No internet connection"],
-        totalSynced: 0
+        totalSynced: 0,
+        metrics: { totalTime: 0, entityTimes: {}, recordsPerSecond: 0 },
+        timestamp: new Date().toISOString()
       };
     }
 
@@ -59,121 +101,194 @@ export class DataSyncService {
         success: false,
         syncedTables: [],
         errors: ["Sync already in progress"],
-        totalSynced: 0
+        totalSynced: 0,
+        metrics: { totalTime: 0, entityTimes: {}, recordsPerSecond: 0 },
+        timestamp: new Date().toISOString()
       };
     }
 
     this.isSyncing = true;
+    const startTime = Date.now();
     const result: SyncResult = {
       success: true,
       syncedTables: [],
       errors: [],
-      totalSynced: 0
+      totalSynced: 0,
+      metrics: { totalTime: 0, entityTimes: {}, recordsPerSecond: 0 },
+      timestamp: new Date().toISOString()
     };
 
     try {
+      console.log("🚀 Starting optimized sync service...");
+      
       // Ensure database connections before starting
       await ensureConnections();
       
-      // Test connections
-      await Promise.all([
-        offlineDb.$queryRaw`SELECT 1`,
-        onlineDb.$queryRaw`SELECT 1`
+      // Test connections with timeout
+      await Promise.race([
+        Promise.all([
+          offlineDb.$queryRaw`SELECT 1`,
+          onlineDb.$queryRaw`SELECT 1`
+        ]),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection test timeout')), 5000)
+        )
       ]);
 
-      // Sync in order of dependencies to avoid foreign key conflicts
-      await this.syncWarehouses(result);
-      await this.syncUsers(result);
-      await this.syncCustomers(result);
-      await this.syncSuppliers(result);
-      await this.syncProducts(result);
-      await this.syncSales(result);
-      await this.syncSaleItems(result);
-      await this.syncPurchases(result);
-      await this.syncPurchaseItems(result);
-      await this.syncPaymentMethods(result);
-      await this.syncReceiptSettings(result);
-      await this.syncSettings(result);
-      await this.syncSuperAdmins(result);
+      // Parallel sync operations for better performance
+      const syncOperations = [
+        // Downstream sync (online -> offline) - reference data
+        this.syncDownstreamData(result, { concurrency, batchSize }),
+        // Upstream sync (offline -> online) - transactional data
+        this.syncUpstreamData(result, { concurrency, batchSize })
+      ];
+
+      const syncResults = await Promise.allSettled(syncOperations);
+      
+      // Handle any sync failures
+      syncResults.forEach((syncResult, index) => {
+        if (syncResult.status === 'rejected') {
+          const syncType = index === 0 ? 'downstream' : 'upstream';
+          result.errors.push(`${syncType} sync failed: ${syncResult.reason}`);
+        }
+      });
 
       result.success = result.errors.length === 0;
+      
+      // Calculate final metrics
+      const totalTime = Date.now() - startTime;
+      result.metrics.totalTime = totalTime;
+      result.metrics.recordsPerSecond = result.totalSynced > 0 ? 
+        Math.round(result.totalSynced / (totalTime / 1000)) : 0;
+
+      console.log(`🎉 Sync service completed in ${totalTime}ms`);
+      console.log(`📊 Performance: ${result.totalSynced} records at ${result.metrics.recordsPerSecond} records/sec`);
+      
     } catch (error) {
       result.success = false;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      result.errors.push(`Sync failed: ${errorMessage}`);
-      console.error("Sync service error:", error);
+      result.errors.push(`Critical sync failure: ${errorMessage}`);
+      console.error("❌ Sync service critical error:", error);
     } finally {
       this.isSyncing = false;
+      result.metrics.totalTime = Date.now() - startTime;
     }
 
     return result;
   }
 
-  private async syncWarehouses(result: SyncResult) {
+  // Optimized downstream sync (online -> offline)
+  private async syncDownstreamData(result: SyncResult, options: BatchSyncOptions): Promise<void> {
+    console.log("⬇️  Sync service: Starting downstream sync...");
+    
+    // Sync reference data in parallel
+    await Promise.all([
+      this.syncWarehouses(result, options),
+      this.syncUsers(result, options)
+    ]);
+  }
+
+  // Optimized upstream sync (offline -> online)
+  private async syncUpstreamData(result: SyncResult, options: BatchSyncOptions): Promise<void> {
+    console.log("⬆️  Sync service: Starting upstream sync...");
+    
+    // Sync in dependency order but with parallel processing where possible
+    await Promise.all([
+      this.syncCustomers(result, options),
+      this.syncSuppliers(result, options),
+      this.syncProducts(result, options),
+      this.syncReceiptSettings(result, options),
+      this.syncSettings(result, options),
+      this.syncSuperAdmins(result, options)
+    ]);
+
+    // Sync dependent entities after their dependencies
+    await Promise.all([
+      this.syncSales(result, options),
+      this.syncPurchases(result, options)
+    ]);
+
+    // Sync items that depend on sales/purchases
+    await Promise.all([
+      this.syncSaleItems(result, options),
+      this.syncPurchaseItems(result, options),
+      this.syncPaymentMethods(result, options)
+    ]);
+  }
+
+  private async syncWarehouses(result: SyncResult, options: BatchSyncOptions): Promise<void> {
+    const entityStart = Date.now();
     try {
-      const unsyncedWarehouses = await onlineDb.warehouses_online.findMany();
+      const warehouses = await onlineDb.warehouses_online.findMany();
 
-      for (const warehouse of unsyncedWarehouses) {
-        const { sync, syncedAt, ...warehouseData } = warehouse;
+      if (warehouses.length > 0) {
+        await pMap(warehouses, async (warehouse) => {
+          const { sync, syncedAt, ...warehouseData } = warehouse;
+          
+          await offlineDb.warehouses.upsert({
+            where: { warehouseCode: warehouse.warehouseCode },
+            update: {
+              ...warehouseData,
+              sync: true,
+              syncedAt: new Date()
+            },
+            create: {
+              ...warehouseData,
+              sync: true,
+              syncedAt: new Date()
+            }
+          });
+        }, { concurrency: options.concurrency || 15 });
+
+        result.totalSynced += warehouses.length;
+        result.syncedTables.push(`Warehouses (${warehouses.length})`);
         
-        await offlineDb.warehouses.upsert({
-          where: { warehouseCode: warehouse.warehouseCode },
-          update: {
-            ...warehouseData,
-            sync: true,
-            syncedAt: new Date()
-          },
-          create: {
-            ...warehouseData,
-            sync: true,
-            syncedAt: new Date()
-          }
-        });
-
-        
-
-        result.totalSynced++;
-      }
-
-      if (unsyncedWarehouses.length > 0) {
-        result.syncedTables.push(`Warehouses (${unsyncedWarehouses.length})`);
+        const duration = Date.now() - entityStart;
+        result.metrics.entityTimes.warehouses = duration;
+        console.log(`✅ Synced ${warehouses.length} warehouses in ${duration}ms`);
       }
     } catch (error) {
       result.errors.push(`Warehouses sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("❌ Warehouses sync error:", error);
     }
   }
 
-  private async syncUsers(result: SyncResult) {
+  private async syncUsers(result: SyncResult, options: BatchSyncOptions): Promise<void> {
+    const entityStart = Date.now();
     try {
-      const unsyncedUsers = await onlineDb.users_online.findMany();
+      const users = await onlineDb.users_online.findMany();
 
-      for (const user of unsyncedUsers) {
-        const { sync, syncedAt,warehouses_onlineId, ...userData } = user;
+      if (users.length > 0) {
+        await pMap(users, async (user) => {
+          const { sync, syncedAt, warehouses_onlineId, ...userData } = user;
+          
+          await offlineDb.users.upsert({
+            where: { userName: user.userName },
+            update: {
+              ...userData,
+              warehousesId: warehouses_onlineId,
+              sync: true,
+              syncedAt: new Date()
+            },
+            create: {
+              ...userData,
+              warehousesId: warehouses_onlineId,
+              sync: true,
+              syncedAt: new Date()
+            }
+          });
+        }, { concurrency: options.concurrency || 15 });
+
+        result.totalSynced += users.length;
+        result.syncedTables.push(`Users (${users.length})`);
         
-        await offlineDb.users.upsert({
-          where: { userName: user.userName },
-          update: {
-            id:user.id,
-            warehousesId: user.warehouses_onlineId,
-            sync: true,
-            syncedAt: new Date()
-          },
-          create: {
-            ...userData,
-            warehousesId: user.warehouses_onlineId,
-            sync: true,
-            syncedAt: new Date()
-          }
-        });
-
-        result.totalSynced++;
-      }
-
-      if (unsyncedUsers.length > 0) {
-        result.syncedTables.push(`Users (${unsyncedUsers.length})`);
+        const duration = Date.now() - entityStart;
+        result.metrics.entityTimes.users = duration;
+        console.log(`✅ Synced ${users.length} users in ${duration}ms`);
       }
     } catch (error) {
       result.errors.push(`Users sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("❌ Users sync error:", error);
     }
   }
 

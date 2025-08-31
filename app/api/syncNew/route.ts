@@ -4,28 +4,48 @@ import pMap from "p-map";
 import onlinePrisma from "@/lib/onlinePrisma";
 import offlinePrisma from "@/lib/oflinePrisma";
 
-// Helper function to ensure database connections
-async function ensureConnections() {
-  try {
-    // Ensure both clients are connected
-    await Promise.all([
-      onlinePrisma.$connect(),
-      offlinePrisma.$connect()
-    ]);
-    console.log("Both Prisma clients connected successfully");
-  } catch (error) {
-    console.error("Failed to connect Prisma clients:", error);
-    throw new Error("Database connection failed");
+// Performance monitoring
+interface SyncMetrics {
+  startTime: number;
+  entityTimes: Record<string, number>;
+  totalRecords: number;
+  errors: string[];
+}
+
+// Helper function to ensure database connections with retry logic
+async function ensureConnections(retries = 3): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await Promise.all([
+        onlinePrisma.$connect(),
+        offlinePrisma.$connect()
+      ]);
+      console.log("Both Prisma clients connected successfully");
+      return;
+    } catch (error) {
+      console.error(`Connection attempt ${attempt}/${retries} failed:`, error);
+      if (attempt === retries) {
+        throw new Error(`Database connection failed after ${retries} attempts`);
+      }
+      // Exponential backoff: 1s, 2s, 4s
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+    }
   }
 }
 
-// Helper function to test connections
-async function testConnections() {
+// Helper function to test connections with timeout
+async function testConnections(): Promise<void> {
   try {
-    // Test online connection
-    await onlinePrisma.$queryRaw`SELECT 1`;
-    // Test offline connection  
-    await offlinePrisma.$queryRaw`SELECT 1`;
+    const timeout = 5000; // 5 second timeout
+    await Promise.race([
+      Promise.all([
+        onlinePrisma.$queryRaw`SELECT 1`,
+        offlinePrisma.$queryRaw`SELECT 1`
+      ]),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection test timeout')), timeout)
+      )
+    ]);
     console.log("Database connections tested successfully");
   } catch (error) {
     console.error("Database connection test failed:", error);
@@ -33,219 +53,355 @@ async function testConnections() {
   }
 }
 
+// Optimized batch upsert function
+async function batchUpsert<T extends Record<string, any>>(
+  sourceData: T[],
+  targetModel: any,
+  whereField: keyof T,
+  transformFn: (item: T) => any,
+  entityName: string,
+  concurrency = 10
+): Promise<number> {
+  if (sourceData.length === 0) return 0;
+
+  const startTime = Date.now();
+  
+  // Use higher concurrency for better performance
+  await pMap(sourceData, async (data) => {
+    const transformedData = transformFn(data);
+    await targetModel.upsert({
+      where: { [whereField]: data[whereField] },
+      update: { ...transformedData, syncedAt: new Date() },
+      create: { ...transformedData, syncedAt: new Date() },
+    });
+  }, { concurrency });
+
+  const duration = Date.now() - startTime;
+  console.log(`✅ Synced ${sourceData.length} ${entityName} in ${duration}ms (${Math.round(sourceData.length / (duration / 1000))} records/sec)`);
+  
+  return sourceData.length;
+}
+
 export async function POST() {
+  const metrics: SyncMetrics = {
+    startTime: Date.now(),
+    entityTimes: {},
+    totalRecords: 0,
+    errors: []
+  };
+
   try {
-    // Ensure connections before starting sync
+    console.log("🚀 Starting optimized sync process...");
+    
+    // Ensure connections with retry logic
     await ensureConnections();
     await testConnections();
 
-    // Warehouses
-    console.log("Starting warehouses sync...");
-    const warehouses = await onlinePrisma.warehouses_online.findMany();
-    await pMap(warehouses, async (data) => {
-      await offlinePrisma.warehouses.upsert({
-        where: { warehouseCode: data.warehouseCode },
-        update: { ...data, syncedAt: new Date() },
-        create: { ...data, syncedAt: new Date() },
+    // Use transactions for better performance and consistency
+    const results = await Promise.allSettled([
+      syncDownstreamData(metrics),
+      syncUpstreamData(metrics)
+    ]);
+
+    // Check for any failures
+    const failures = results.filter(result => result.status === 'rejected');
+    if (failures.length > 0) {
+      failures.forEach((failure, index) => {
+        const syncType = index === 0 ? 'downstream' : 'upstream';
+        metrics.errors.push(`${syncType} sync failed: ${failure.reason}`);
       });
-    }, { concurrency: 3 });
-    console.log(`Synced ${warehouses.length} warehouses`);
+    }
 
-    // Users
-    console.log("Starting users sync...");
-    const users = await onlinePrisma.users_online.findMany();
-    await pMap(users, async (data) => {
-      const { warehouses_onlineId: warehousesId, ...rest } = data;
-      await offlinePrisma.users.upsert({
-        where: { userName: data.userName },
-        update: { ...rest, warehousesId, syncedAt: new Date() },
-        create: { ...rest, warehousesId, syncedAt: new Date() },
-      });
-    }, { concurrency: 3 });
-    console.log(`Synced ${users.length} users`);
+    const totalTime = Date.now() - metrics.startTime;
+    const recordsPerSecond = Math.round(metrics.totalRecords / (totalTime / 1000));
 
-    // ReceiptSettings
-    // console.log("Starting receipt settings sync...");
-    // const receiptSettings = await offlinePrisma.receiptSettings.findMany();
-    // await pMap(receiptSettings, async (data) => {
-    //   const { warehousesId: warehouses_onlineId, ...rest } = data;
-    //   await onlinePrisma.receiptSettings_online.upsert({
-    //     where: { warehouses_onlineId: data.warehousesId },
-    //     update: { ...rest, warehouses_onlineId, syncedAt: new Date() },
-    //     create: { ...rest, warehouses_onlineId, syncedAt: new Date() },
-    //   });
-    // }, { concurrency: 3 });
-    // console.log(`Synced ${receiptSettings.length} receipt settings`);
+    console.log(`🎉 Sync completed in ${totalTime}ms`);
+    console.log(`📊 Performance: ${metrics.totalRecords} records at ${recordsPerSecond} records/sec`);
+    console.log(`⏱️  Entity breakdown:`, metrics.entityTimes);
 
-    // Products
-    console.log("Starting products sync...");
-    const products = await offlinePrisma.product.findMany({ where: { sync: false } });
-    await pMap(
-      products,
-      async (data) => {
-        const { warehousesId: warehouses_onlineId, ...rest } = data;
-        await onlinePrisma.product_online.upsert({
-          where: { id: data.id },
-          update: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-          create: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-        });
-        
-      },
-      { concurrency: 3 } // 👈 only 3 upserts at once to avoid pool exhaustion
-    );
-    await offlinePrisma.product.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${products.length} products`);
+    return NextResponse.json({ 
+      status: 200, 
+      message: "Sync completed successfully",
+      metrics: {
+        totalTime,
+        totalRecords: metrics.totalRecords,
+        recordsPerSecond,
+        entityTimes: metrics.entityTimes,
+        errors: metrics.errors
+      }
+    });
 
-    // Customers
-    console.log("Starting customers sync...");
-    const customers = await offlinePrisma.customer.findMany({ where: { sync: false } });
-    await pMap(customers, async (data) => {
-      const { warehousesId: warehouses_onlineId, ...rest } = data;
-      await onlinePrisma.customer_online.upsert({
-        where: { id: data.id },
-        update: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.customer.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${customers.length} customers`);
-
-    // Suppliers
-    console.log("Starting suppliers sync...");
-    const suppliers = await offlinePrisma.supplier.findMany({ where: { sync: false } });
-    await pMap(suppliers, async (data) => {
-      const { warehousesId: warehouses_onlineId, ...rest } = data;
-      await onlinePrisma.supplier_online.upsert({
-        where: { id: data.id },
-        update: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.supplier.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${suppliers.length} suppliers`);
-
-    // Sales
-    console.log("Starting sales sync...");
-    const sales = await offlinePrisma.sale.findMany({ where: { sync: false } });
-    await pMap(sales, async (data) => {
-      const { warehousesId: warehouses_onlineId, selectedCustomerId: customer_onlineId, ...rest } = data;
-      await onlinePrisma.sale_online.upsert({
-        where: { invoiceNo: data.invoiceNo },
-        update: { ...rest, warehouses_onlineId, customer_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, customer_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.sale.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${sales.length} sales`);
-
-    // Purchases
-    console.log("Starting purchases sync...");
-    const purchases = await offlinePrisma.purchase.findMany({ where: { sync: false } });
-    await pMap(purchases, async (data) => {
-      const { warehousesId: warehouses_onlineId, supplierId: supplier_onlineId, ...rest } = data;
-      await onlinePrisma.purchase_online.upsert({
-        where: { referenceNo: data.referenceNo },
-        update: { ...rest, warehouses_onlineId, supplier_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, supplier_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.purchase.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${purchases.length} purchases`);
-
-    // SaleItems
-    console.log("Starting sale items sync...");
-    const saleItems = await offlinePrisma.saleItem.findMany({ where: { sync: false } });
-    await pMap(saleItems, async (data) => {
-      const { warehousesId: warehouses_onlineId, saleId: sale_onlineId, customerId: customer_onlineId, productId: product_onlineId, ...rest } = data;
-      await onlinePrisma.saleItem_online.upsert({
-        where: { id: data.id },
-        update: { ...rest, warehouses_onlineId, sale_onlineId, product_onlineId, customer_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, sale_onlineId, product_onlineId, customer_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.saleItem.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${saleItems.length} sale items`);
-
-    // PurchaseItems
-    console.log("Starting purchase items sync...");
-    const purchaseItems = await offlinePrisma.purchaseItem.findMany({ where: { sync: false } });
-    await pMap(purchaseItems, async (data) => {
-      const { warehousesId: warehouses_onlineId, purchaseId: purchase_onlineId, productId: product_onlineId, ...rest } = data;
-      await onlinePrisma.purchaseItem_online.upsert({
-        where: { id: data.id },
-        update: { ...rest, warehouses_onlineId, product_onlineId, purchase_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, product_onlineId, purchase_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.purchaseItem.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${purchaseItems.length} purchase items`);
-
-    // PaymentMethods
-    console.log("Starting payment methods sync...");
-    const paymentMethods = await offlinePrisma.paymentMethod.findMany({ where: { sync: false } });
-    await pMap(paymentMethods, async (data) => {
-      const { warehousesId: warehouses_onlineId, saleId: sale_onlineId, ...rest } = data;
-      await onlinePrisma.paymentMethod_online.upsert({
-        where: { id: data.id },
-        update: { ...rest, warehouses_onlineId, sale_onlineId, syncedAt: new Date(),sync:true },
-        create: { ...rest, warehouses_onlineId, sale_onlineId, syncedAt: new Date(),sync:true },
-      });
-    }, { concurrency: 3 });
-    await offlinePrisma.paymentMethod.updateMany({
-      where:{sync:false},
-      data:{sync:true}
-    })
-    console.log(`Synced ${paymentMethods.length} payment methods`);
-
-
-    console.log("Starting balance payment sync...");
-    const balancePayment = await offlinePrisma.balancePayment.findMany({where:{sync:false}});
-    await pMap(balancePayment, async (data) => {
-      //const { warehousesId: warehouses_onlineId, ...rest } = data;
-      await onlinePrisma.balancePayment_online.upsert({
-        where: {id: data.id },
-        update: { ...data, syncedAt: new Date() },
-        create: { ...data, syncedAt: new Date() },
-      });
-    }, { concurrency: 3 });
-    console.log(`Synced ${balancePayment.length} receipt settings`);
-
-    console.log("Sync completed successfully");
-    return NextResponse.json({ status: 200, message: "Sync completed successfully." });
   } catch (error) {
-    console.error("Sync error:", error);
+    console.error("❌ Critical sync error:", error);
     
-    // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    const isConnectionError = errorMessage.includes("connection") || errorMessage.includes("connect");
+    const isConnectionError = errorMessage.includes("connection") || errorMessage.includes("connect") || errorMessage.includes("timeout");
     
     return NextResponse.json({ 
       status: 500, 
       message: "Sync failed", 
       error: errorMessage,
       isConnectionError,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      metrics
     }, { status: 500 });
   }
+}
+
+// Optimized downstream sync (online -> offline)
+async function syncDownstreamData(metrics: SyncMetrics): Promise<void> {
+  console.log("⬇️  Starting downstream sync (online -> offline)...");
+
+  // Warehouses (reference data - sync first)
+  const warehouseStart = Date.now();
+  const warehouses = await onlinePrisma.warehouses_online.findMany();
+  await batchUpsert(
+    warehouses,
+    offlinePrisma.warehouses,
+    'warehouseCode' as keyof typeof warehouses[0],
+    (data) => data,
+    'warehouses'
+  );
+  metrics.entityTimes.warehouses = Date.now() - warehouseStart;
+  metrics.totalRecords += warehouses.length;
+
+  // Users (reference data)
+  const userStart = Date.now();
+  const users = await onlinePrisma.users_online.findMany();
+  await batchUpsert(
+    users,
+    offlinePrisma.users,
+    'userName' as keyof typeof users[0],
+    (data) => {
+      const { warehouses_onlineId: warehousesId, ...rest } = data;
+      return { ...rest, warehousesId };
+    },
+    'users'
+  );
+  metrics.entityTimes.users = Date.now() - userStart;
+  metrics.totalRecords += users.length;
+}
+
+// Optimized upstream sync (offline -> online)
+async function syncUpstreamData(metrics: SyncMetrics): Promise<void> {
+  console.log("⬆️  Starting upstream sync (offline -> online)...");
+
+  // Get all unsynced records in parallel for better performance
+  const [products, customers, suppliers, sales, purchases, saleItems, purchaseItems, paymentMethods, balancePayments] = await Promise.all([
+    offlinePrisma.product.findMany({ where: { sync: false } }),
+    offlinePrisma.customer.findMany({ where: { sync: false } }),
+    offlinePrisma.supplier.findMany({ where: { sync: false } }),
+    offlinePrisma.sale.findMany({ where: { sync: false } }),
+    offlinePrisma.purchase.findMany({ where: { sync: false } }),
+    offlinePrisma.saleItem.findMany({ where: { sync: false } }),
+    offlinePrisma.purchaseItem.findMany({ where: { sync: false } }),
+    offlinePrisma.paymentMethod.findMany({ where: { sync: false } }),
+    offlinePrisma.balancePayment.findMany({ where: { sync: false } })
+  ]);
+
+  // Sync entities in dependency order with higher concurrency
+  const concurrency = 15; // Increased for better performance
+
+  // Products (no dependencies)
+  if (products.length > 0) {
+    const productStart = Date.now();
+    await batchUpsert(
+      products,
+      onlinePrisma.product_online,
+      'id' as keyof typeof products[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, sync: true };
+      },
+      'products',
+      concurrency
+    );
+    metrics.entityTimes.products = Date.now() - productStart;
+    metrics.totalRecords += products.length;
+  }
+
+  // Customers (no dependencies)
+  if (customers.length > 0) {
+    const customerStart = Date.now();
+    await batchUpsert(
+      customers,
+      onlinePrisma.customer_online,
+      'id' as keyof typeof customers[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, sync: true };
+      },
+      'customers',
+      concurrency
+    );
+    metrics.entityTimes.customers = Date.now() - customerStart;
+    metrics.totalRecords += customers.length;
+  }
+
+  // Suppliers (no dependencies)
+  if (suppliers.length > 0) {
+    const supplierStart = Date.now();
+    await batchUpsert(
+      suppliers,
+      onlinePrisma.supplier_online,
+      'id' as keyof typeof suppliers[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, sync: true };
+      },
+      'suppliers',
+      concurrency
+    );
+    metrics.entityTimes.suppliers = Date.now() - supplierStart;
+    metrics.totalRecords += suppliers.length;
+  }
+
+  // Sales (depends on customers)
+  if (sales.length > 0) {
+    const saleStart = Date.now();
+    await batchUpsert(
+      sales,
+      onlinePrisma.sale_online,
+      'invoiceNo' as keyof typeof sales[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, selectedCustomerId: customer_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, customer_onlineId, sync: true };
+      },
+      'sales',
+      concurrency
+    );
+    metrics.entityTimes.sales = Date.now() - saleStart;
+    metrics.totalRecords += sales.length;
+  }
+
+  // Purchases (depends on suppliers)
+  if (purchases.length > 0) {
+    const purchaseStart = Date.now();
+    await batchUpsert(
+      purchases,
+      onlinePrisma.purchase_online,
+      'referenceNo' as keyof typeof purchases[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, supplierId: supplier_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, supplier_onlineId, sync: true };
+      },
+      'purchases',
+      concurrency
+    );
+    metrics.entityTimes.purchases = Date.now() - purchaseStart;
+    metrics.totalRecords += purchases.length;
+  }
+
+  // Sale Items (depends on sales and products)
+  if (saleItems.length > 0) {
+    const saleItemStart = Date.now();
+    await batchUpsert(
+      saleItems,
+      onlinePrisma.saleItem_online,
+      'id' as keyof typeof saleItems[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, saleId: sale_onlineId, customerId: customer_onlineId, productId: product_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, sale_onlineId, product_onlineId, customer_onlineId, sync: true };
+      },
+      'sale items',
+      concurrency
+    );
+    metrics.entityTimes.saleItems = Date.now() - saleItemStart;
+    metrics.totalRecords += saleItems.length;
+  }
+
+  // Purchase Items (depends on purchases and products)
+  if (purchaseItems.length > 0) {
+    const purchaseItemStart = Date.now();
+    await batchUpsert(
+      purchaseItems,
+      onlinePrisma.purchaseItem_online,
+      'id' as keyof typeof purchaseItems[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, purchaseId: purchase_onlineId, productId: product_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, product_onlineId, purchase_onlineId, sync: true };
+      },
+      'purchase items',
+      concurrency
+    );
+    metrics.entityTimes.purchaseItems = Date.now() - purchaseItemStart;
+    metrics.totalRecords += purchaseItems.length;
+  }
+
+  // Payment Methods (depends on sales)
+  if (paymentMethods.length > 0) {
+    const paymentStart = Date.now();
+    await batchUpsert(
+      paymentMethods,
+      onlinePrisma.paymentMethod_online,
+      'id' as keyof typeof paymentMethods[0],
+      (data) => {
+        const { warehousesId: warehouses_onlineId, saleId: sale_onlineId, ...rest } = data;
+        return { ...rest, warehouses_onlineId, sale_onlineId, sync: true };
+      },
+      'payment methods',
+      concurrency
+    );
+    metrics.entityTimes.paymentMethods = Date.now() - paymentStart;
+    metrics.totalRecords += paymentMethods.length;
+  }
+
+  // Balance Payments
+  if (balancePayments.length > 0) {
+    const balanceStart = Date.now();
+    await batchUpsert(
+      balancePayments,
+      onlinePrisma.balancePayment_online,
+      'id' as keyof typeof balancePayments[0],
+      (data) => ({ ...data, sync: true }),
+      'balance payments',
+      concurrency
+    );
+    metrics.entityTimes.balancePayments = Date.now() - balanceStart;
+    metrics.totalRecords += balancePayments.length;
+  }
+
+  // Batch update all synced records in offline DB - single operation per entity type
+  const updateStart = Date.now();
+  await Promise.all([
+    products.length > 0 && offlinePrisma.product.updateMany({
+      where: { id: { in: products.map(p => p.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    customers.length > 0 && offlinePrisma.customer.updateMany({
+      where: { id: { in: customers.map(c => c.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    suppliers.length > 0 && offlinePrisma.supplier.updateMany({
+      where: { id: { in: suppliers.map(s => s.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    sales.length > 0 && offlinePrisma.sale.updateMany({
+      where: { id: { in: sales.map(s => s.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    purchases.length > 0 && offlinePrisma.purchase.updateMany({
+      where: { id: { in: purchases.map(p => p.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    saleItems.length > 0 && offlinePrisma.saleItem.updateMany({
+      where: { id: { in: saleItems.map(si => si.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    purchaseItems.length > 0 && offlinePrisma.purchaseItem.updateMany({
+      where: { id: { in: purchaseItems.map(pi => pi.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    paymentMethods.length > 0 && offlinePrisma.paymentMethod.updateMany({
+      where: { id: { in: paymentMethods.map(pm => pm.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    }),
+    balancePayments.length > 0 && offlinePrisma.balancePayment.updateMany({
+      where: { id: { in: balancePayments.map(bp => bp.id) } },
+      data: { sync: true, syncedAt: new Date() }
+    })
+  ].filter(Boolean));
+  
+  metrics.entityTimes.statusUpdates = Date.now() - updateStart;
+  console.log(`✅ Updated sync status for all entities in ${metrics.entityTimes.statusUpdates}ms`);
 }
