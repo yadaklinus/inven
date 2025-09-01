@@ -1,0 +1,70 @@
+{
+  "name": "pos-system-electron",
+  "version": "1.0.0",
+  "description": "POS System Electron App",
+  "main": "main.js",
+  "scripts": {
+    "electron": "electron .",
+    "electron-dev": "ELECTRON_IS_DEV=true electron .",
+    "electron-pack": "electron-builder",
+    "preelectron-pack": "npm run build",
+    "dist": "npm run build && electron-builder",
+    "dist-win": "npm run build && electron-builder --win",
+    "dist-mac": "npm run build && electron-builder --mac",
+    "dist-linux": "npm run build && electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.yourcompany.pos-system",
+    "productName": "POS System",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*",
+      "../out/**/*",
+      "../node_modules/**/*",
+      "../prisma/**/*",
+      "../public/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../prisma",
+        "to": "prisma"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "yourusername",
+      "repo": "pos-system"
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.4.0",
+    "electron-builder": "^25.1.8",
+    "electron-is-dev": "^2.0.0",
+    "electron-reload": "^2.0.0",
+    "electron-updater": "^6.1.7"
+  }
+}

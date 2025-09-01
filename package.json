@@ -6,7 +6,17 @@
     "dev": "npx prisma generate --schema=prisma/online.prisma && npx prisma generate --schema=prisma/schema.prisma && next dev --turbopack",
     "build": "npx prisma generate --schema=prisma/online.prisma && npx prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix",
+    "electron": "cd electron && npm run electron-dev",
+    "electron-build": "npm run build && cd electron && npm run electron-pack",
+    "electron-dist": "npm run build && cd electron && npm run dist",
+    "electron-dist-win": "npm run build && cd electron && npm run dist-win",
+    "electron-dist-mac": "npm run build && cd electron && npm run dist-mac",
+    "electron-dist-linux": "npm run build && cd electron && npm run dist-linux",
+    "setup": "node scripts/setup.js",
+    "build-electron": "node scripts/build-electron.js",
+    "distribute": "node scripts/distribute.js",
+    "test-setup": "node scripts/test-setup.js"
   },
   "dependencies": {
     "@heroui/button": "2.2.22",
@@ -62,7 +72,10 @@
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.8",
@@ -77,6 +90,10 @@
     "@typescript-eslint/parser": "8.31.1",
     "autoprefixer": "10.4.21",
     "electron": "^37.4.0",
+    "electron-builder": "^25.1.8",
+    "electron-is-dev": "^2.0.0",
+    "electron-reload": "^2.0.0",
+    "electron-updater": "^6.1.7",
     "eslint": "9.25.1",
     "eslint-config-next": "15.3.1",
     "eslint-config-prettier": "10.1.2",
