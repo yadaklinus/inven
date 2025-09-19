@@ -47,7 +47,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { BalancePaymentDialog } from "@/components/balance-payment-dialog"
-import { BalancePaymentReceipt } from "@/components/balance-payment-receipt"
+import { BalanceDepositDialog } from "@/components/balance-deposit-dialog"
+import { Wallet, Plus as PlusIcon } from "lucide-react"
 
 interface CustomerActivity {
   id: string
@@ -100,6 +101,7 @@ interface ActivityData {
     totalAmount: number
     totalPaid: number
     totalBalance: number
+    customerAccount:number
   }
 }
 
@@ -118,6 +120,10 @@ export default function CustomerActivitiesPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [selectedPaymentActivity, setSelectedPaymentActivity] = useState<CustomerActivity | null>(null)
   const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<BalancePayment | null>(null)
+  const [customerAccountBalanceDialogOpen,setCustomerAccountBalanceDialogOpen] = useState(false)
+  const [customerBalance, setCustomerBalance] = useState(0)
+const [balanceTransactions, setBalanceTransactions] = useState([])
+const [balanceDepositDialogOpen, setBalanceDepositDialogOpen] = useState(false)
   const [endPoint, setEndPoint] = useState("")
 
   useEffect(() => {
@@ -155,17 +161,40 @@ export default function CustomerActivitiesPage() {
     }
   }
 
+  const fetchCustomerBalance = async () => {
+    try {
+      const response = await fetch(`/api/customer/balance/${customerId}`)
+      if (response.ok) {
+        const balanceData = await response.json()
+        setCustomerBalance(balanceData.balance)
+        setBalanceTransactions(balanceData.recentTransactions || [])
+      }
+    } catch (error) {
+      console.error('Error fetching customer balance:', error)
+    }
+  }
+
   useEffect(() => {
     if (customerId) {
       fetchActivities()
       fetchBalancePayments()
+      fetchCustomerBalance() 
     }
   }, [customerId])
+
+  const handleBalanceDepositSuccess = () => {
+    fetchCustomerBalance()
+    fetchBalancePayments()
+    fetchActivities() // Refresh activities as balance changes might affect them
+  }
 
   const handlePaymentSuccess = () => {
     fetchActivities()
     fetchBalancePayments()
+    fetchCustomerBalance()
   }
+
+ 
 
   const openPaymentDialog = (activity: CustomerActivity) => {
     setSelectedPaymentActivity(activity)
@@ -387,7 +416,7 @@ export default function CustomerActivitiesPage() {
               <Activity className="h-5 w-5 text-blue-600" />
               <h1 className="text-xl sm:text-2xl font-semibold text-blue-600">Customer Activities</h1>
             </div>
-            <Button
+            {/* <Button
               onClick={() => {
                 fetchActivities()
                 fetchBalancePayments()
@@ -397,52 +426,80 @@ export default function CustomerActivitiesPage() {
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
-            </Button>
+            </Button> */}
           </div>
 
           {/* Customer Information */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="h-5 w-5" />
-                Customer Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
-                  <p className="font-medium">{data.customer.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Type</label>
-                  <Badge variant="outline">{data.customer.type}</Badge>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-sm">{data.customer.phone}</p>
-                </div>
-                {data.customer.email && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-sm">{data.customer.email}</p>
-                  </div>
-                )}
-                {data.customer.companyName && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Company</label>
-                    <p className="text-sm">{data.customer.companyName}</p>
-                  </div>
-                )}
-                {data.customer.address && (
-                  <div className="sm:col-span-2 lg:col-span-3">
-                    <label className="text-sm font-medium text-gray-500">Address</label>
-                    <p className="text-sm">{data.customer.address}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+  <CardHeader>
+    <div className="flex justify-between items-start">
+      <div>
+        <CardTitle className="flex items-center gap-2">
+          <UserCheck className="h-5 w-5" />
+          Customer Information
+        </CardTitle>
+      </div>
+      <Button
+        onClick={() => setBalanceDepositDialogOpen(true)}
+        size="sm"
+        className="bg-green-600 hover:bg-green-700"
+      >
+        <PlusIcon className="h-4 w-4 mr-2" />
+        Add Balance
+      </Button>
+    </div>
+  </CardHeader>
+  <CardContent>
+    {/* Account Balance Section */}
+    <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Wallet className="h-5 w-5 text-green-600" />
+          <span className="font-medium text-gray-700">Account Balance</span>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-green-700">
+            {formatCurrency(customerBalance)}
+          </div>
+          <div className="text-xs text-gray-500">Available Credit</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div>
+        <label className="text-sm font-medium text-gray-500">Name</label>
+        <p className="font-medium">{data.customer.name}</p>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-500">Type</label>
+        <Badge variant="outline">{data.customer.type}</Badge>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-500">Phone</label>
+        <p className="text-sm">{data.customer.phone}</p>
+      </div>
+      {data.customer.email && (
+        <div>
+          <label className="text-sm font-medium text-gray-500">Email</label>
+          <p className="text-sm">{data.customer.email}</p>
+        </div>
+      )}
+      {data.customer.companyName && (
+        <div>
+          <label className="text-sm font-medium text-gray-500">Company</label>
+          <p className="text-sm">{data.customer.companyName}</p>
+        </div>
+      )}
+      {data.customer.address && (
+        <div className="sm:col-span-2 lg:col-span-3">
+          <label className="text-sm font-medium text-gray-500">Address</label>
+          <p className="text-sm">{data.customer.address}</p>
+        </div>
+      )}
+    </div>
+  </CardContent>
+</Card>
 
           {/* Summary Cards */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -490,14 +547,31 @@ export default function CustomerActivitiesPage() {
                 <p className="text-xs text-muted-foreground">Amount due</p>
               </CardContent>
             </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Outstanding Balance</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-xl sm:text-2xl font-bold ${getBalanceColor(data.summary.totalBalance)}`}>
+                  {formatCurrency(data.summary.customerAccount)}
+                </div>
+                <p className="text-xs text-muted-foreground">Amount due</p>
+              </CardContent>
+            </Card>
           </div>
+
+          <Button onClick={()=>{
+            setCustomerAccountBalanceDialogOpen(true)
+          }}>Add Balance</Button>
 
           {/* Tabs for Activities and Balance Payments */}
           <Tabs defaultValue="activities" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-              <TabsTrigger value="activities">Transaction History</TabsTrigger>
-              <TabsTrigger value="balance-payments">Balance Paid</TabsTrigger>
-            </TabsList>
+          <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
+            <TabsTrigger value="activities">Transaction History</TabsTrigger>
+            <TabsTrigger value="balance-payments">Balance Paid</TabsTrigger>
+            <TabsTrigger value="balance-transactions">Balance Transactions</TabsTrigger>
+          </TabsList>
 
             {/* Transaction History Tab */}
             <TabsContent value="activities">
@@ -750,6 +824,79 @@ export default function CustomerActivitiesPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+            <TabsContent value="balance-transactions">
+    <Card>
+      <CardHeader>
+        <CardTitle>Balance Transactions</CardTitle>
+        <CardDescription>
+          Showing {balanceTransactions.length} balance transaction(s)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {balanceTransactions.length === 0 ? (
+          <div className="text-center py-8">
+            <Wallet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No balance transactions found</h3>
+            <p className="text-muted-foreground">
+              No balance deposits or payments have been made for this customer yet.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Balance After</TableHead>
+                  <TableHead>Reference</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {balanceTransactions.map((transaction: any) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{formatDate(transaction.createdAt)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={transaction.type === "CREDIT" ? "default" : "destructive"}
+                        className={transaction.type === "CREDIT" ? "bg-green-600" : ""}
+                      >
+                        {transaction.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="capitalize">
+                      {transaction.paymentMethod?.replace('_', ' ')}
+                    </TableCell>
+                    <TableCell className={`text-right font-medium ${
+                      transaction.type === "CREDIT" ? "text-green-600" : "text-red-600"
+                    }`}>
+                      {transaction.type === "CREDIT" ? "+" : "-"}
+                      {formatCurrency(transaction.amount)}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(transaction.balanceAfter)}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {transaction.reference || "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </TabsContent>
           </Tabs>
         </div>
 
@@ -765,6 +912,17 @@ export default function CustomerActivitiesPage() {
           warehousesId={warehouseId}
           onPaymentSuccess={handlePaymentSuccess}
         />
+
+<BalanceDepositDialog
+  open={balanceDepositDialogOpen}
+  onOpenChange={setBalanceDepositDialogOpen}
+  customerId={customerId}
+  customerName={data?.customer?.name || ""}
+  currentBalance={customerBalance}
+  warehouseId={warehouseId}
+  onDepositSuccess={handleBalanceDepositSuccess}
+/>
+      
      </>
   )
 }

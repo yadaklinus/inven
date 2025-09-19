@@ -38,7 +38,7 @@ export default function LoginForm() {
 
   const [loading,setLoading] = useState(false)
   
-  useAutoSync()
+  // useAutoSync()
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)

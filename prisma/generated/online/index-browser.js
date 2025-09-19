@@ -271,11 +271,30 @@ exports.Prisma.Customer_onlineScalarFieldEnum = {
   email: 'email',
   address: 'address',
   phone: 'phone',
+  accountBalance: 'accountBalance',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   sync: 'sync',
   syncedAt: 'syncedAt',
   warehouses_onlineId: 'warehouses_onlineId',
+  isDeleted: 'isDeleted'
+};
+
+exports.Prisma.BalanceTransaction_onlineScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  amount: 'amount',
+  type: 'type',
+  description: 'description',
+  paymentMethod: 'paymentMethod',
+  reference: 'reference',
+  saleId: 'saleId',
+  balanceAfter: 'balanceAfter',
+  warehouses_onlineId: 'warehouses_onlineId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  sync: 'sync',
+  syncedAt: 'syncedAt',
   isDeleted: 'isDeleted'
 };
 
@@ -472,6 +491,7 @@ exports.Prisma.ModelName = {
   Purchase_online: 'Purchase_online',
   PurchaseItem_online: 'PurchaseItem_online',
   Customer_online: 'Customer_online',
+  BalanceTransaction_online: 'BalanceTransaction_online',
   Supplier_online: 'Supplier_online',
   Product_online: 'Product_online',
   PaymentMethod_online: 'PaymentMethod_online',

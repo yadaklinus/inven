@@ -94,29 +94,30 @@ model Settings {
 }
 
 model Warehouses {
-  id              String            @id @default(uuid())
-  warehouseCode   String            @unique
-  name            String
-  phoneNumber     String
-  email           String
-  description     String?
-  address         String
-  users           users[]
-  products        Product[]
-  customer        Customer[]
-  saleItem        SaleItem[]
-  sale            Sale[]
-  paymentMethod   PaymentMethod[]
-  purchase        Purchase[]
-  purchaseItem    PurchaseItem[]
-  supplier        Supplier[]
-  receiptSettings ReceiptSettings[]
-  balancePayment  BalancePayment[]
-  quotation       Quotation[]
-  quotationItem   QuotationItem[]
-  sync            Boolean           @default(false) // Sync field
-  syncedAt        DateTime? // When last synced
-  isDeleted       Boolean           @default(false)
+  id                 String               @id @default(uuid())
+  warehouseCode      String               @unique
+  name               String
+  phoneNumber        String
+  email              String
+  description        String?
+  address            String
+  users              users[]
+  products           Product[]
+  customer           Customer[]
+  saleItem           SaleItem[]
+  sale               Sale[]
+  paymentMethod      PaymentMethod[]
+  purchase           Purchase[]
+  purchaseItem       PurchaseItem[]
+  supplier           Supplier[]
+  receiptSettings    ReceiptSettings[]
+  balancePayment     BalancePayment[]
+  quotation          Quotation[]
+  balanceTransaction BalanceTransaction[]
+  quotationItem      QuotationItem[]
+  sync               Boolean              @default(false) // Sync field
+  syncedAt           DateTime? // When last synced
+  isDeleted          Boolean              @default(false)
 }
 
 model Sale {
@@ -215,24 +216,46 @@ model PurchaseItem {
 }
 
 model Customer {
-  id             String           @id @default(uuid())
-  name           String
-  type           String
-  companyName    String?
-  email          String?
-  address        String?
-  phone          String
-  Warehouses     Warehouses?      @relation(fields: [warehousesId], references: [warehouseCode])
-  warehousesId   String
-  Sale           Sale[]
-  saleItem       SaleItem[]
-  balancePayment BalancePayment[]
-  quotation      Quotation[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  sync           Boolean          @default(false) // Sync field
-  syncedAt       DateTime? // When last synced
-  isDeleted      Boolean          @default(false)
+  id                 String               @id @default(uuid())
+  name               String
+  type               String
+  companyName        String?
+  email              String?
+  address            String?
+  phone              String
+  accountBalance     Float                @default(0) // Add this field
+  Warehouses         Warehouses?          @relation(fields: [warehousesId], references: [warehouseCode])
+  warehousesId       String
+  Sale               Sale[]
+  saleItem           SaleItem[]
+  balancePayment     BalancePayment[]
+  balanceTransaction BalanceTransaction[] // Add this relation
+  quotation          Quotation[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  sync               Boolean              @default(false) // Sync field
+  syncedAt           DateTime? // When last synced
+  isDeleted          Boolean              @default(false)
+}
+
+model BalanceTransaction {
+  id            String      @id @default(uuid())
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  amount        Float
+  type          String // CREDIT or DEBIT
+  description   String
+  paymentMethod String? // cash, card, bank_transfer, mobile_money
+  reference     String? // Transaction reference
+  saleId        String? // If related to a sale
+  balanceAfter  Float // Balance after this transaction
+  warehouseId   String?
+  warehouses    Warehouses? @relation(fields: [warehouseId], references: [warehouseCode])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  sync          Boolean     @default(false)
+  syncedAt      DateTime?
+  isDeleted     Boolean     @default(false)
 }
 
 model Supplier {

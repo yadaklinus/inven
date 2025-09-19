@@ -114,6 +114,7 @@ model Warehouses_online {
   balancePayment  BalancePayment_online[]
   quotation       Quotation_online[]
   quotationItem   QuotationItem_online[]
+  balanceTransaction  BalanceTransaction_online[]
   sync            Boolean                  @default(false) // Sync field
   syncedAt        DateTime? // When last synced
   isDeleted       Boolean                  @default(false)
@@ -226,10 +227,12 @@ model Customer_online {
   email               String?
   address             String?
   phone               String
+  accountBalance      Float               @default(0)
   Sale                Sale_online[]
   saleItem            SaleItem_online[]
   balancePayment      BalancePayment_online[]
   quotation           Quotation_online[]
+  balanceTransaction  BalanceTransaction_online[]
   createdAt           DateTime                @default(now())
   updatedAt           DateTime                @updatedAt
   sync                Boolean                 @default(false) // Sync field
@@ -237,6 +240,26 @@ model Customer_online {
   Warehouses_online   Warehouses_online?      @relation(fields: [warehouses_onlineId], references: [warehouseCode])
   warehouses_onlineId String?
   isDeleted           Boolean                 @default(false)
+}
+
+model BalanceTransaction_online {
+  id           String      @id @default(uuid())
+  customerId   String
+  customer     Customer_online    @relation(fields: [customerId], references: [id])
+  amount       Float
+  type         String      // CREDIT or DEBIT
+  description  String
+  paymentMethod String?    // cash, card, bank_transfer, mobile_money
+  reference    String?     // Transaction reference
+  saleId       String?     // If related to a sale
+  balanceAfter Float       // Balance after this transaction
+  Warehouses_online   Warehouses_online?      @relation(fields: [warehouses_onlineId], references: [warehouseCode])
+  warehouses_onlineId String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  sync         Boolean     @default(false)
+  syncedAt     DateTime?
+  isDeleted    Boolean     @default(false)
 }
 
 model Supplier_online {

@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
             where: { isDeleted: false }
         });
         
+       
         return NextResponse.json(customers, { status: 200 });
     } catch (error) {
         console.error("Customer fetch error:", error);
@@ -43,6 +44,7 @@ export async function POST(req:NextRequest){
                 syncedAt: null
             }
         })
+
         
         console.log(`New customer created: ${newCustomer.id} - marked as unsynced`);
         

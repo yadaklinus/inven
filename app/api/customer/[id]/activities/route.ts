@@ -12,6 +12,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
             where: { id: customerId,isDeleted:false }
         })
 
+       
         if (!customer) {
             return NextResponse.json({ error: "Customer not found" }, { status: 404 })
         }
@@ -69,7 +70,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
                 totalSales,
                 totalAmount,
                 totalPaid,
-                totalBalance
+                totalBalance,
+               
             }
         }, { status: 200 })
 

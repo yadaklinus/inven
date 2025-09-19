@@ -47,6 +47,7 @@ import fetchWareHouseData from "@/hooks/fetch-invidual-data"
 import axios from "axios"
 import { SystemStatus } from "@/components/system-status"
 import { useSession } from "next-auth/react"
+import { Wallet } from "lucide-react"
 
 // Sample data with updated pricing structure matching Prisma schema
 
@@ -71,7 +72,7 @@ interface SaleItem {
 
 interface PaymentMethod {
   id: string
-  method: "cash" | "card" | "bank_transfer" | "check" | "mobile_money"
+  method: "cash" | "card" | "bank_transfer" | "check" | "mobile_money" | "balance"
   amount: number
   reference?: string
   notes?: string
@@ -128,6 +129,9 @@ export default function AddSalePage() {
   const [completedSale, setCompletedSale] = useState<CompletedSale | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [endPoint, setEndPoint] = useState("")
+  const [customerBalance, setCustomerBalance] = useState(0)
+const [useBalancePayment, setUseBalancePayment] = useState(false)
+const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
 
   
   // Multiple payment methods state
@@ -215,14 +219,36 @@ export default function AddSalePage() {
   const selectedProduct = products?.find((p:any) => p.id === selectedProductId)
   const selectedCustomerData = customers?.find((c:any) => c.id === selectedCustomer)
 
-  // Auto-set price type based on customer type
-  const handleCustomerChange = (customerId: string) => {
-    setSelectedCustomer(customerId)
-    const customer = customers?.find((c:any) => c.id === customerId)
-    if (customer) {
-      setPriceType(customer.type as "wholesale" | "retail")
+  const fetchCustomerBalance = async (customerId: string) => {
+    try {
+      const response = await fetch(`/api/customer/balance/${customerId}`)
+      if (response.ok) {
+        const balanceData = await response.json()
+        setCustomerBalance(balanceData.balance || 0)
+      } else {
+        setCustomerBalance(0)
+      }
+    } catch (error) {
+      console.error('Error fetching customer balance:', error)
+      setCustomerBalance(0)
     }
   }
+
+
+  // Auto-set price type based on customer type
+  const handleCustomerChange = (customerId: string) => {
+  setSelectedCustomer(customerId)
+  const customer = customers?.find((c:any) => c.id === customerId)
+  if (customer) {
+    setPriceType(customer.type as "wholesale" | "retail")
+    fetchCustomerBalance(customerId) // Add this line
+  }
+  // Reset balance payment when customer changes
+  setUseBalancePayment(false)
+  setBalancePaymentAmount("")
+}
+
+
 
   const getCurrentPrice = (product: (typeof products)[0], type: "wholesale" | "retail") => {
     return type === "wholesale" ? product.wholeSalePrice : product.retailPrice
@@ -345,6 +371,8 @@ export default function AddSalePage() {
         return <Smartphone className="h-4 w-4" />
       case "mobile_money":
         return <Smartphone className="h-4 w-4" />
+      case "balance":
+        return <Wallet className="h-4 w-4" />
       default:
         return <CreditCard className="h-4 w-4" />
     }
@@ -362,6 +390,8 @@ export default function AddSalePage() {
         return "Check"
       case "mobile_money":
         return "Mobile Money"
+      case "balance":
+        return "Account Balance"
       default:
         return method
     }
@@ -382,21 +412,92 @@ export default function AddSalePage() {
       alert("Please complete all required fields")
       return
     }
-
+  
     if (paymentMethods.length === 0) {
       alert("Please add at least one payment method")
       return
     }
-
+  
     setIsSubmitting(true)
-
+  
     try {
       const currentDate = new Date()
       const invoiceNo = `INV-${String(Math.floor(Math.random() * 1000000)).padStart(6, "0")}`
       const saleId = `SALE-${Date.now()}`
-
-      // Prepare sale data with multiple payment methods
-      const saleData: CompletedSale = {
+  
+      // Check if there are balance payments
+      const balancePayments = paymentMethods.filter(pm => pm.method === "balance")
+      const totalBalanceUsed = balancePayments.reduce((sum, pm) => sum + pm.amount, 0)
+      
+      // Calculate remaining amount after balance payment
+      const remainingAmount = grandTotal - totalBalanceUsed
+      const otherPayments = paymentMethods.filter(pm => pm.method !== "balance")
+      const otherPaymentsTotal = otherPayments.reduce((sum, pm) => sum + pm.amount, 0)
+      
+      // Calculate final balance (debt)
+      const finalBalance = remainingAmount - otherPaymentsTotal
+  
+      // Prepare sale data
+      const saleData = {
+        items: saleItems?.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          costPrice: item.cost,
+          salePrice: item.selectedPrice,
+          priceType: item.priceType,
+          quantity: item.quantity,
+          discount: item.discount,
+          total: item.total,
+        })),
+        invoiceNo,
+        subtotal,
+        totalDiscount,
+        taxRate,
+        taxAmount,
+        grandTotal,
+        paymentMethods: otherPayments, // Only non-balance payments go to the sale API
+        amountPaid: otherPaymentsTotal + totalBalanceUsed,
+        balance: finalBalance,
+        notes,
+        cashier: "Admin User",
+        warehouseId,
+        customer: {
+          id: selectedCustomerData?.id || "",
+          name: selectedCustomerData?.name || "Walk-in Customer",
+        }
+      }
+  
+      // First, create the sale
+      const saleResponse = await axios.post("/api/sale", saleData)
+  
+      if (!saleResponse.data || saleResponse.status !== 200) {
+        throw new Error("Failed to create sale")
+      }
+  
+      // If there were balance payments, deduct from customer balance
+      if (totalBalanceUsed > 0) {
+        try {
+          await fetch(`/api/customer/balance/${selectedCustomer}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amount: totalBalanceUsed,
+              description: `Purchase payment - Invoice ${invoiceNo}`,
+              saleId: invoiceNo,
+              warehouseId,
+            }),
+          })
+        } catch (balanceError) {
+          console.error("Error deducting balance:", balanceError)
+          // Continue even if balance deduction fails - sale is already created
+          alert("Sale completed but there was an issue updating the customer balance. Please check manually.")
+        }
+      }
+  
+      // Create completed sale data for display
+      const completedSaleData: CompletedSale = {
         saleId,
         invoiceNo,
         date: currentDate.toLocaleDateString("en-US", {
@@ -434,38 +535,33 @@ export default function AddSalePage() {
         taxRate,
         taxAmount,
         grandTotal,
-        paymentMethods: [...paymentMethods],
-        totalPaid,
-        balance,
+        paymentMethods: [...paymentMethods], // Include all payment methods for receipt
+        totalPaid: totalPaid,
+        balance: finalBalance,
         notes,
         cashier: "Admin User",
         warehouseId
       }
-
-      // Simulate API call to save sale
-      console.log("Saving sale data:", saleData)
-
-      // Simulate API delay
-      await axios.post("/api/sale",saleData)
-
-      // Update product stock (in real app, this would be handled by the API)
-      saleItems?.forEach((item) => {
-        const product = products?.find((p:any) => p.id === item.productId)
-        if (product) {
-          product.quantity -= item.quantity
-        }
-      })
-
+  
+      // Update local customer balance for UI
+      if (totalBalanceUsed > 0) {
+        setCustomerBalance(prev => prev - totalBalanceUsed)
+      }
+  
       // Set completed sale data and show success dialog
-      setCompletedSale(saleData)
+      setCompletedSale(completedSaleData)
       setShowSuccessDialog(true)
-
+  
       // Reset form
       setSaleItems([])
       setSelectedCustomer("")
       setPaymentMethods([])
       setNotes("")
       setTaxRate(10)
+      setCustomerBalance(0)
+      setUseBalancePayment(false)
+      setBalancePaymentAmount("")
+      
     } catch (error) {
       console.error("Error saving sale:", error)
       alert("Error completing sale. Please try again.")
@@ -508,6 +604,34 @@ export default function AddSalePage() {
 
   const handleNewSale = () => {
     handleCloseSuccessDialog()
+  }
+
+  const addBalancePayment = async () => {
+    if (!selectedCustomer || !useBalancePayment) return
+  
+    const balanceAmount = Math.min(
+      parseFloat(balancePaymentAmount) || customerBalance,
+      customerBalance,
+      grandTotal - totalPaid
+    )
+  
+    if (balanceAmount <= 0) {
+      alert("Invalid balance payment amount")
+      return
+    }
+  
+    // Add balance as a payment method
+    const balancePayment: PaymentMethod = {
+      id: `BAL-${Date.now()}`,
+      method: "balance" as any, // We'll need to extend the type
+      amount: balanceAmount,
+      reference: "Account Balance",
+      notes: `Paid from account balance`,
+    }
+  
+    setPaymentMethods([...paymentMethods, balancePayment])
+    setUseBalancePayment(false)
+    setBalancePaymentAmount("")
   }
 
   const handleViewSales = () => {
@@ -885,63 +1009,122 @@ export default function AddSalePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Add Payment Form */}
+                  {selectedCustomer && customerBalance > 0 && (
+                        <div className="p-4 border rounded-lg border-green-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Wallet className="h-5 w-5 text-green-600" />
+                              <span className="font-medium text-green-700">Account Balance Available</span>
+                            </div>
+                            <span className="font-bold text-green-700">
+                              {formatCurrency(customerBalance)}
+                            </span>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="useBalance"
+                                checked={useBalancePayment}
+                                onChange={(e) => setUseBalancePayment(e.target.checked)}
+                                className="rounded border-gray-300"
+                              />
+                              <Label htmlFor="useBalance">Pay with account balance</Label>
+                            </div>
+                            
+                            {useBalancePayment && (
+                              <div className="space-y-2">
+                                <Label htmlFor="balanceAmount">Amount to use from balance</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    id="balanceAmount"
+                                    type="number"
+                                    placeholder="0.00"
+                                    max={Math.min(customerBalance, grandTotal - totalPaid)}
+                                    value={balancePaymentAmount}
+                                    onChange={(e) => setBalancePaymentAmount(e.target.value)}
+                                  />
+                                  <Button
+                                    onClick={() => setBalancePaymentAmount(
+                                      Math.min(customerBalance, grandTotal - totalPaid).toString()
+                                    )}
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    Max
+                                  </Button>
+                                </div>
+                                <Button
+                                  onClick={addBalancePayment}
+                                  size="sm"
+                                  className="w-full bg-green-600 hover:bg-green-700"
+                                >
+                                  <Wallet className="mr-2 h-4 w-4" />
+                                  Add Balance Payment
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                   <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
-                    <div className="space-y-2">
-                      <Label>Payment Method</Label>
-                      <Select
-                        value={currentPaymentMethod}
-                        onValueChange={(value: any) => setCurrentPaymentMethod(value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="card">Card</SelectItem>
-                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                          <SelectItem value="check">Check</SelectItem>
-                          <SelectItem value="mobile_money">Mobile Money</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+      <div className="space-y-2">
+        <Label>Payment Method</Label>
+        <Select
+          value={currentPaymentMethod}
+          onValueChange={(value: any) => setCurrentPaymentMethod(value)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cash">Cash</SelectItem>
+            <SelectItem value="card">Card</SelectItem>
+            <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+            <SelectItem value="check">Check</SelectItem>
+            <SelectItem value="mobile_money">Mobile Money</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-2">
-                        <Label>Amount</Label>
-                        <Input
-                          ref={paymentAmountRef}
-                          type="number"
-                          placeholder="0.00"
-                          value={currentPaymentAmount}
-                          onChange={(e) => setCurrentPaymentAmount(e.target.value)}
-                        />
-                        <Button ref={allButtonRef} onClick={()=>setCurrentPaymentAmount(grandTotal)}>All</Button>&nbsp;
-                        <Button onClick={()=>setCurrentPaymentAmount(grandTotal/2)}>Half</Button>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Reference</Label>
-                        <Input
-                          placeholder="Optional"
-                          value={currentPaymentReference}
-                          onChange={(e) => setCurrentPaymentReference(e.target.value)}
-                        />
-                      </div>
-                    </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
+          <Label>Amount</Label>
+          <Input
+            ref={paymentAmountRef}
+            type="number"
+            placeholder="0.00"
+            value={currentPaymentAmount}
+            onChange={(e) => setCurrentPaymentAmount(e.target.value)}
+          />
+          <Button ref={allButtonRef} onClick={()=>setCurrentPaymentAmount(grandTotal)}>All</Button>&nbsp;
+          <Button onClick={()=>setCurrentPaymentAmount(grandTotal/2)}>Half</Button>
+        </div>
+        <div className="space-y-2">
+          <Label>Reference</Label>
+          <Input
+            placeholder="Optional"
+            value={currentPaymentReference}
+            onChange={(e) => setCurrentPaymentReference(e.target.value)}
+          />
+        </div>
+      </div>
 
-                    <div className="space-y-2">
-                      <Label>Notes</Label>
-                      <Input
-                        placeholder="Optional notes"
-                        value={currentPaymentNotes}
-                        onChange={(e) => setCurrentPaymentNotes(e.target.value)}
-                      />
-                    </div>
+      <div className="space-y-2">
+        <Label>Notes</Label>
+        <Input
+          placeholder="Optional notes"
+          value={currentPaymentNotes}
+          onChange={(e) => setCurrentPaymentNotes(e.target.value)}
+        />
+      </div>
 
-                    <Button ref={addPaymentButtonRef} onClick={addPaymentMethod} className="w-full" size="sm">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Payment
-                    </Button>
-                  </div>
+      <Button ref={addPaymentButtonRef} onClick={addPaymentMethod} className="w-full" size="sm">
+        <Plus className="mr-2 h-4 w-4" />
+        Add Payment
+      </Button>
+    </div>
 
                   {/* Payment Methods List */}
                   {paymentMethods.length > 0 && (
@@ -950,27 +1133,34 @@ export default function AddSalePage() {
                       <div className="space-y-2">
                         {paymentMethods.map((payment) => (
                           <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-2">
-                              {getPaymentMethodIcon(payment.method)}
-                              <div>
-                                <div className="font-medium">
-                                  {getPaymentMethodLabel(payment.method)} - {formatCurrency(payment.amount)}
-                                </div>
-                                {payment.reference && (
-                                  <div className="text-sm text-muted-foreground">Ref: {payment.reference}</div>
-                                )}
-                                {payment.notes && <div className="text-sm text-muted-foreground">{payment.notes}</div>}
+                          <div className="flex items-center gap-2">
+                            {payment.method === "balance" ? (
+                              <Wallet className="h-4 w-4 text-green-600" />
+                            ) : (
+                              getPaymentMethodIcon(payment.method)
+                            )}
+                            <div>
+                              <div className="font-medium">
+                                {payment.method === "balance" 
+                                  ? "Account Balance" 
+                                  : getPaymentMethodLabel(payment.method)
+                                } - {formatCurrency(payment.amount)}
                               </div>
+                              {payment.reference && (
+                                <div className="text-sm text-muted-foreground">Ref: {payment.reference}</div>
+                              )}
+                              {payment.notes && <div className="text-sm text-muted-foreground">{payment.notes}</div>}
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removePaymentMethod(payment.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removePaymentMethod(payment.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                         ))}
                       </div>
                     </div>

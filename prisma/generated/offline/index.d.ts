@@ -59,6 +59,11 @@ export type PurchaseItem = $Result.DefaultSelection<Prisma.$PurchaseItemPayload>
  */
 export type Customer = $Result.DefaultSelection<Prisma.$CustomerPayload>
 /**
+ * Model BalanceTransaction
+ * 
+ */
+export type BalanceTransaction = $Result.DefaultSelection<Prisma.$BalanceTransactionPayload>
+/**
  * Model Supplier
  * 
  */
@@ -368,6 +373,16 @@ export class PrismaClient<
     * ```
     */
   get customer(): Prisma.CustomerDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.balanceTransaction`: Exposes CRUD operations for the **BalanceTransaction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BalanceTransactions
+    * const balanceTransactions = await prisma.balanceTransaction.findMany()
+    * ```
+    */
+  get balanceTransaction(): Prisma.BalanceTransactionDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.supplier`: Exposes CRUD operations for the **Supplier** model.
@@ -887,6 +902,7 @@ export namespace Prisma {
     Purchase: 'Purchase',
     PurchaseItem: 'PurchaseItem',
     Customer: 'Customer',
+    BalanceTransaction: 'BalanceTransaction',
     Supplier: 'Supplier',
     Product: 'Product',
     PaymentMethod: 'PaymentMethod',
@@ -912,7 +928,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "superAdmin" | "users" | "settings" | "warehouses" | "sale" | "saleItem" | "purchase" | "purchaseItem" | "customer" | "supplier" | "product" | "paymentMethod" | "receiptSettings" | "balancePayment" | "quotation" | "quotationItem"
+      modelProps: "superAdmin" | "users" | "settings" | "warehouses" | "sale" | "saleItem" | "purchase" | "purchaseItem" | "customer" | "balanceTransaction" | "supplier" | "product" | "paymentMethod" | "receiptSettings" | "balancePayment" | "quotation" | "quotationItem"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1582,6 +1598,80 @@ export namespace Prisma {
           }
         }
       }
+      BalanceTransaction: {
+        payload: Prisma.$BalanceTransactionPayload<ExtArgs>
+        fields: Prisma.BalanceTransactionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BalanceTransactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BalanceTransactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          findFirst: {
+            args: Prisma.BalanceTransactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BalanceTransactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          findMany: {
+            args: Prisma.BalanceTransactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>[]
+          }
+          create: {
+            args: Prisma.BalanceTransactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          createMany: {
+            args: Prisma.BalanceTransactionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BalanceTransactionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>[]
+          }
+          delete: {
+            args: Prisma.BalanceTransactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          update: {
+            args: Prisma.BalanceTransactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          deleteMany: {
+            args: Prisma.BalanceTransactionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BalanceTransactionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BalanceTransactionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>[]
+          }
+          upsert: {
+            args: Prisma.BalanceTransactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BalanceTransactionPayload>
+          }
+          aggregate: {
+            args: Prisma.BalanceTransactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBalanceTransaction>
+          }
+          groupBy: {
+            args: Prisma.BalanceTransactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BalanceTransactionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BalanceTransactionCountArgs<ExtArgs>
+            result: $Utils.Optional<BalanceTransactionCountAggregateOutputType> | number
+          }
+        }
+      }
       Supplier: {
         payload: Prisma.$SupplierPayload<ExtArgs>
         fields: Prisma.SupplierFieldRefs
@@ -2193,6 +2283,7 @@ export namespace Prisma {
     purchase?: PurchaseOmit
     purchaseItem?: PurchaseItemOmit
     customer?: CustomerOmit
+    balanceTransaction?: BalanceTransactionOmit
     supplier?: SupplierOmit
     product?: ProductOmit
     paymentMethod?: PaymentMethodOmit
@@ -2306,6 +2397,7 @@ export namespace Prisma {
     receiptSettings: number
     balancePayment: number
     quotation: number
+    balanceTransaction: number
     quotationItem: number
   }
 
@@ -2322,6 +2414,7 @@ export namespace Prisma {
     receiptSettings?: boolean | WarehousesCountOutputTypeCountReceiptSettingsArgs
     balancePayment?: boolean | WarehousesCountOutputTypeCountBalancePaymentArgs
     quotation?: boolean | WarehousesCountOutputTypeCountQuotationArgs
+    balanceTransaction?: boolean | WarehousesCountOutputTypeCountBalanceTransactionArgs
     quotationItem?: boolean | WarehousesCountOutputTypeCountQuotationItemArgs
   }
 
@@ -2423,6 +2516,13 @@ export namespace Prisma {
   /**
    * WarehousesCountOutputType without action
    */
+  export type WarehousesCountOutputTypeCountBalanceTransactionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BalanceTransactionWhereInput
+  }
+
+  /**
+   * WarehousesCountOutputType without action
+   */
   export type WarehousesCountOutputTypeCountQuotationItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: QuotationItemWhereInput
   }
@@ -2516,6 +2616,7 @@ export namespace Prisma {
     Sale: number
     saleItem: number
     balancePayment: number
+    balanceTransaction: number
     quotation: number
   }
 
@@ -2523,6 +2624,7 @@ export namespace Prisma {
     Sale?: boolean | CustomerCountOutputTypeCountSaleArgs
     saleItem?: boolean | CustomerCountOutputTypeCountSaleItemArgs
     balancePayment?: boolean | CustomerCountOutputTypeCountBalancePaymentArgs
+    balanceTransaction?: boolean | CustomerCountOutputTypeCountBalanceTransactionArgs
     quotation?: boolean | CustomerCountOutputTypeCountQuotationArgs
   }
 
@@ -2556,6 +2658,13 @@ export namespace Prisma {
    */
   export type CustomerCountOutputTypeCountBalancePaymentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: BalancePaymentWhereInput
+  }
+
+  /**
+   * CustomerCountOutputType without action
+   */
+  export type CustomerCountOutputTypeCountBalanceTransactionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BalanceTransactionWhereInput
   }
 
   /**
@@ -6338,6 +6447,7 @@ export namespace Prisma {
     receiptSettings?: boolean | Warehouses$receiptSettingsArgs<ExtArgs>
     balancePayment?: boolean | Warehouses$balancePaymentArgs<ExtArgs>
     quotation?: boolean | Warehouses$quotationArgs<ExtArgs>
+    balanceTransaction?: boolean | Warehouses$balanceTransactionArgs<ExtArgs>
     quotationItem?: boolean | Warehouses$quotationItemArgs<ExtArgs>
     _count?: boolean | WarehousesCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["warehouses"]>
@@ -6395,6 +6505,7 @@ export namespace Prisma {
     receiptSettings?: boolean | Warehouses$receiptSettingsArgs<ExtArgs>
     balancePayment?: boolean | Warehouses$balancePaymentArgs<ExtArgs>
     quotation?: boolean | Warehouses$quotationArgs<ExtArgs>
+    balanceTransaction?: boolean | Warehouses$balanceTransactionArgs<ExtArgs>
     quotationItem?: boolean | Warehouses$quotationItemArgs<ExtArgs>
     _count?: boolean | WarehousesCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -6416,6 +6527,7 @@ export namespace Prisma {
       receiptSettings: Prisma.$ReceiptSettingsPayload<ExtArgs>[]
       balancePayment: Prisma.$BalancePaymentPayload<ExtArgs>[]
       quotation: Prisma.$QuotationPayload<ExtArgs>[]
+      balanceTransaction: Prisma.$BalanceTransactionPayload<ExtArgs>[]
       quotationItem: Prisma.$QuotationItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6835,6 +6947,7 @@ export namespace Prisma {
     receiptSettings<T extends Warehouses$receiptSettingsArgs<ExtArgs> = {}>(args?: Subset<T, Warehouses$receiptSettingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReceiptSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     balancePayment<T extends Warehouses$balancePaymentArgs<ExtArgs> = {}>(args?: Subset<T, Warehouses$balancePaymentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalancePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     quotation<T extends Warehouses$quotationArgs<ExtArgs> = {}>(args?: Subset<T, Warehouses$quotationArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    balanceTransaction<T extends Warehouses$balanceTransactionArgs<ExtArgs> = {}>(args?: Subset<T, Warehouses$balanceTransactionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     quotationItem<T extends Warehouses$quotationItemArgs<ExtArgs> = {}>(args?: Subset<T, Warehouses$quotationItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QuotationItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -7546,6 +7659,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: QuotationScalarFieldEnum | QuotationScalarFieldEnum[]
+  }
+
+  /**
+   * Warehouses.balanceTransaction
+   */
+  export type Warehouses$balanceTransactionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    where?: BalanceTransactionWhereInput
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    cursor?: BalanceTransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BalanceTransactionScalarFieldEnum | BalanceTransactionScalarFieldEnum[]
   }
 
   /**
@@ -13037,8 +13174,18 @@ export namespace Prisma {
 
   export type AggregateCustomer = {
     _count: CustomerCountAggregateOutputType | null
+    _avg: CustomerAvgAggregateOutputType | null
+    _sum: CustomerSumAggregateOutputType | null
     _min: CustomerMinAggregateOutputType | null
     _max: CustomerMaxAggregateOutputType | null
+  }
+
+  export type CustomerAvgAggregateOutputType = {
+    accountBalance: number | null
+  }
+
+  export type CustomerSumAggregateOutputType = {
+    accountBalance: number | null
   }
 
   export type CustomerMinAggregateOutputType = {
@@ -13049,6 +13196,7 @@ export namespace Prisma {
     email: string | null
     address: string | null
     phone: string | null
+    accountBalance: number | null
     warehousesId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -13065,6 +13213,7 @@ export namespace Prisma {
     email: string | null
     address: string | null
     phone: string | null
+    accountBalance: number | null
     warehousesId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -13081,6 +13230,7 @@ export namespace Prisma {
     email: number
     address: number
     phone: number
+    accountBalance: number
     warehousesId: number
     createdAt: number
     updatedAt: number
@@ -13091,6 +13241,14 @@ export namespace Prisma {
   }
 
 
+  export type CustomerAvgAggregateInputType = {
+    accountBalance?: true
+  }
+
+  export type CustomerSumAggregateInputType = {
+    accountBalance?: true
+  }
+
   export type CustomerMinAggregateInputType = {
     id?: true
     name?: true
@@ -13099,6 +13257,7 @@ export namespace Prisma {
     email?: true
     address?: true
     phone?: true
+    accountBalance?: true
     warehousesId?: true
     createdAt?: true
     updatedAt?: true
@@ -13115,6 +13274,7 @@ export namespace Prisma {
     email?: true
     address?: true
     phone?: true
+    accountBalance?: true
     warehousesId?: true
     createdAt?: true
     updatedAt?: true
@@ -13131,6 +13291,7 @@ export namespace Prisma {
     email?: true
     address?: true
     phone?: true
+    accountBalance?: true
     warehousesId?: true
     createdAt?: true
     updatedAt?: true
@@ -13178,6 +13339,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: CustomerAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CustomerSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: CustomerMinAggregateInputType
@@ -13208,6 +13381,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: CustomerCountAggregateInputType | true
+    _avg?: CustomerAvgAggregateInputType
+    _sum?: CustomerSumAggregateInputType
     _min?: CustomerMinAggregateInputType
     _max?: CustomerMaxAggregateInputType
   }
@@ -13220,6 +13395,7 @@ export namespace Prisma {
     email: string | null
     address: string | null
     phone: string
+    accountBalance: number
     warehousesId: string
     createdAt: Date
     updatedAt: Date
@@ -13227,6 +13403,8 @@ export namespace Prisma {
     syncedAt: Date | null
     isDeleted: boolean
     _count: CustomerCountAggregateOutputType | null
+    _avg: CustomerAvgAggregateOutputType | null
+    _sum: CustomerSumAggregateOutputType | null
     _min: CustomerMinAggregateOutputType | null
     _max: CustomerMaxAggregateOutputType | null
   }
@@ -13253,6 +13431,7 @@ export namespace Prisma {
     email?: boolean
     address?: boolean
     phone?: boolean
+    accountBalance?: boolean
     warehousesId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -13263,6 +13442,7 @@ export namespace Prisma {
     Sale?: boolean | Customer$SaleArgs<ExtArgs>
     saleItem?: boolean | Customer$saleItemArgs<ExtArgs>
     balancePayment?: boolean | Customer$balancePaymentArgs<ExtArgs>
+    balanceTransaction?: boolean | Customer$balanceTransactionArgs<ExtArgs>
     quotation?: boolean | Customer$quotationArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
@@ -13275,6 +13455,7 @@ export namespace Prisma {
     email?: boolean
     address?: boolean
     phone?: boolean
+    accountBalance?: boolean
     warehousesId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -13292,6 +13473,7 @@ export namespace Prisma {
     email?: boolean
     address?: boolean
     phone?: boolean
+    accountBalance?: boolean
     warehousesId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -13309,6 +13491,7 @@ export namespace Prisma {
     email?: boolean
     address?: boolean
     phone?: boolean
+    accountBalance?: boolean
     warehousesId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -13317,12 +13500,13 @@ export namespace Prisma {
     isDeleted?: boolean
   }
 
-  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "type" | "companyName" | "email" | "address" | "phone" | "warehousesId" | "createdAt" | "updatedAt" | "sync" | "syncedAt" | "isDeleted", ExtArgs["result"]["customer"]>
+  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "type" | "companyName" | "email" | "address" | "phone" | "accountBalance" | "warehousesId" | "createdAt" | "updatedAt" | "sync" | "syncedAt" | "isDeleted", ExtArgs["result"]["customer"]>
   export type CustomerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     Warehouses?: boolean | Customer$WarehousesArgs<ExtArgs>
     Sale?: boolean | Customer$SaleArgs<ExtArgs>
     saleItem?: boolean | Customer$saleItemArgs<ExtArgs>
     balancePayment?: boolean | Customer$balancePaymentArgs<ExtArgs>
+    balanceTransaction?: boolean | Customer$balanceTransactionArgs<ExtArgs>
     quotation?: boolean | Customer$quotationArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -13340,6 +13524,7 @@ export namespace Prisma {
       Sale: Prisma.$SalePayload<ExtArgs>[]
       saleItem: Prisma.$SaleItemPayload<ExtArgs>[]
       balancePayment: Prisma.$BalancePaymentPayload<ExtArgs>[]
+      balanceTransaction: Prisma.$BalanceTransactionPayload<ExtArgs>[]
       quotation: Prisma.$QuotationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -13350,6 +13535,7 @@ export namespace Prisma {
       email: string | null
       address: string | null
       phone: string
+      accountBalance: number
       warehousesId: string
       createdAt: Date
       updatedAt: Date
@@ -13754,6 +13940,7 @@ export namespace Prisma {
     Sale<T extends Customer$SaleArgs<ExtArgs> = {}>(args?: Subset<T, Customer$SaleArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     saleItem<T extends Customer$saleItemArgs<ExtArgs> = {}>(args?: Subset<T, Customer$saleItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SaleItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     balancePayment<T extends Customer$balancePaymentArgs<ExtArgs> = {}>(args?: Subset<T, Customer$balancePaymentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalancePaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    balanceTransaction<T extends Customer$balanceTransactionArgs<ExtArgs> = {}>(args?: Subset<T, Customer$balanceTransactionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     quotation<T extends Customer$quotationArgs<ExtArgs> = {}>(args?: Subset<T, Customer$quotationArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -13791,6 +13978,7 @@ export namespace Prisma {
     readonly email: FieldRef<"Customer", 'String'>
     readonly address: FieldRef<"Customer", 'String'>
     readonly phone: FieldRef<"Customer", 'String'>
+    readonly accountBalance: FieldRef<"Customer", 'Float'>
     readonly warehousesId: FieldRef<"Customer", 'String'>
     readonly createdAt: FieldRef<"Customer", 'DateTime'>
     readonly updatedAt: FieldRef<"Customer", 'DateTime'>
@@ -14282,6 +14470,30 @@ export namespace Prisma {
   }
 
   /**
+   * Customer.balanceTransaction
+   */
+  export type Customer$balanceTransactionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    where?: BalanceTransactionWhereInput
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    cursor?: BalanceTransactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BalanceTransactionScalarFieldEnum | BalanceTransactionScalarFieldEnum[]
+  }
+
+  /**
    * Customer.quotation
    */
   export type Customer$quotationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14321,6 +14533,1257 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CustomerInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BalanceTransaction
+   */
+
+  export type AggregateBalanceTransaction = {
+    _count: BalanceTransactionCountAggregateOutputType | null
+    _avg: BalanceTransactionAvgAggregateOutputType | null
+    _sum: BalanceTransactionSumAggregateOutputType | null
+    _min: BalanceTransactionMinAggregateOutputType | null
+    _max: BalanceTransactionMaxAggregateOutputType | null
+  }
+
+  export type BalanceTransactionAvgAggregateOutputType = {
+    amount: number | null
+    balanceAfter: number | null
+  }
+
+  export type BalanceTransactionSumAggregateOutputType = {
+    amount: number | null
+    balanceAfter: number | null
+  }
+
+  export type BalanceTransactionMinAggregateOutputType = {
+    id: string | null
+    customerId: string | null
+    amount: number | null
+    type: string | null
+    description: string | null
+    paymentMethod: string | null
+    reference: string | null
+    saleId: string | null
+    balanceAfter: number | null
+    warehouseId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    sync: boolean | null
+    syncedAt: Date | null
+    isDeleted: boolean | null
+  }
+
+  export type BalanceTransactionMaxAggregateOutputType = {
+    id: string | null
+    customerId: string | null
+    amount: number | null
+    type: string | null
+    description: string | null
+    paymentMethod: string | null
+    reference: string | null
+    saleId: string | null
+    balanceAfter: number | null
+    warehouseId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    sync: boolean | null
+    syncedAt: Date | null
+    isDeleted: boolean | null
+  }
+
+  export type BalanceTransactionCountAggregateOutputType = {
+    id: number
+    customerId: number
+    amount: number
+    type: number
+    description: number
+    paymentMethod: number
+    reference: number
+    saleId: number
+    balanceAfter: number
+    warehouseId: number
+    createdAt: number
+    updatedAt: number
+    sync: number
+    syncedAt: number
+    isDeleted: number
+    _all: number
+  }
+
+
+  export type BalanceTransactionAvgAggregateInputType = {
+    amount?: true
+    balanceAfter?: true
+  }
+
+  export type BalanceTransactionSumAggregateInputType = {
+    amount?: true
+    balanceAfter?: true
+  }
+
+  export type BalanceTransactionMinAggregateInputType = {
+    id?: true
+    customerId?: true
+    amount?: true
+    type?: true
+    description?: true
+    paymentMethod?: true
+    reference?: true
+    saleId?: true
+    balanceAfter?: true
+    warehouseId?: true
+    createdAt?: true
+    updatedAt?: true
+    sync?: true
+    syncedAt?: true
+    isDeleted?: true
+  }
+
+  export type BalanceTransactionMaxAggregateInputType = {
+    id?: true
+    customerId?: true
+    amount?: true
+    type?: true
+    description?: true
+    paymentMethod?: true
+    reference?: true
+    saleId?: true
+    balanceAfter?: true
+    warehouseId?: true
+    createdAt?: true
+    updatedAt?: true
+    sync?: true
+    syncedAt?: true
+    isDeleted?: true
+  }
+
+  export type BalanceTransactionCountAggregateInputType = {
+    id?: true
+    customerId?: true
+    amount?: true
+    type?: true
+    description?: true
+    paymentMethod?: true
+    reference?: true
+    saleId?: true
+    balanceAfter?: true
+    warehouseId?: true
+    createdAt?: true
+    updatedAt?: true
+    sync?: true
+    syncedAt?: true
+    isDeleted?: true
+    _all?: true
+  }
+
+  export type BalanceTransactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BalanceTransaction to aggregate.
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BalanceTransactions to fetch.
+     */
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BalanceTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BalanceTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BalanceTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BalanceTransactions
+    **/
+    _count?: true | BalanceTransactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BalanceTransactionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BalanceTransactionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BalanceTransactionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BalanceTransactionMaxAggregateInputType
+  }
+
+  export type GetBalanceTransactionAggregateType<T extends BalanceTransactionAggregateArgs> = {
+        [P in keyof T & keyof AggregateBalanceTransaction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBalanceTransaction[P]>
+      : GetScalarType<T[P], AggregateBalanceTransaction[P]>
+  }
+
+
+
+
+  export type BalanceTransactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BalanceTransactionWhereInput
+    orderBy?: BalanceTransactionOrderByWithAggregationInput | BalanceTransactionOrderByWithAggregationInput[]
+    by: BalanceTransactionScalarFieldEnum[] | BalanceTransactionScalarFieldEnum
+    having?: BalanceTransactionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BalanceTransactionCountAggregateInputType | true
+    _avg?: BalanceTransactionAvgAggregateInputType
+    _sum?: BalanceTransactionSumAggregateInputType
+    _min?: BalanceTransactionMinAggregateInputType
+    _max?: BalanceTransactionMaxAggregateInputType
+  }
+
+  export type BalanceTransactionGroupByOutputType = {
+    id: string
+    customerId: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod: string | null
+    reference: string | null
+    saleId: string | null
+    balanceAfter: number
+    warehouseId: string | null
+    createdAt: Date
+    updatedAt: Date
+    sync: boolean
+    syncedAt: Date | null
+    isDeleted: boolean
+    _count: BalanceTransactionCountAggregateOutputType | null
+    _avg: BalanceTransactionAvgAggregateOutputType | null
+    _sum: BalanceTransactionSumAggregateOutputType | null
+    _min: BalanceTransactionMinAggregateOutputType | null
+    _max: BalanceTransactionMaxAggregateOutputType | null
+  }
+
+  type GetBalanceTransactionGroupByPayload<T extends BalanceTransactionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BalanceTransactionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BalanceTransactionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BalanceTransactionGroupByOutputType[P]>
+            : GetScalarType<T[P], BalanceTransactionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BalanceTransactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    paymentMethod?: boolean
+    reference?: boolean
+    saleId?: boolean
+    balanceAfter?: boolean
+    warehouseId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sync?: boolean
+    syncedAt?: boolean
+    isDeleted?: boolean
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }, ExtArgs["result"]["balanceTransaction"]>
+
+  export type BalanceTransactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    paymentMethod?: boolean
+    reference?: boolean
+    saleId?: boolean
+    balanceAfter?: boolean
+    warehouseId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sync?: boolean
+    syncedAt?: boolean
+    isDeleted?: boolean
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }, ExtArgs["result"]["balanceTransaction"]>
+
+  export type BalanceTransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    customerId?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    paymentMethod?: boolean
+    reference?: boolean
+    saleId?: boolean
+    balanceAfter?: boolean
+    warehouseId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sync?: boolean
+    syncedAt?: boolean
+    isDeleted?: boolean
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }, ExtArgs["result"]["balanceTransaction"]>
+
+  export type BalanceTransactionSelectScalar = {
+    id?: boolean
+    customerId?: boolean
+    amount?: boolean
+    type?: boolean
+    description?: boolean
+    paymentMethod?: boolean
+    reference?: boolean
+    saleId?: boolean
+    balanceAfter?: boolean
+    warehouseId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sync?: boolean
+    syncedAt?: boolean
+    isDeleted?: boolean
+  }
+
+  export type BalanceTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "amount" | "type" | "description" | "paymentMethod" | "reference" | "saleId" | "balanceAfter" | "warehouseId" | "createdAt" | "updatedAt" | "sync" | "syncedAt" | "isDeleted", ExtArgs["result"]["balanceTransaction"]>
+  export type BalanceTransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }
+  export type BalanceTransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }
+  export type BalanceTransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    customer?: boolean | CustomerDefaultArgs<ExtArgs>
+    warehouses?: boolean | BalanceTransaction$warehousesArgs<ExtArgs>
+  }
+
+  export type $BalanceTransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BalanceTransaction"
+    objects: {
+      customer: Prisma.$CustomerPayload<ExtArgs>
+      warehouses: Prisma.$WarehousesPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      customerId: string
+      amount: number
+      type: string
+      description: string
+      paymentMethod: string | null
+      reference: string | null
+      saleId: string | null
+      balanceAfter: number
+      warehouseId: string | null
+      createdAt: Date
+      updatedAt: Date
+      sync: boolean
+      syncedAt: Date | null
+      isDeleted: boolean
+    }, ExtArgs["result"]["balanceTransaction"]>
+    composites: {}
+  }
+
+  type BalanceTransactionGetPayload<S extends boolean | null | undefined | BalanceTransactionDefaultArgs> = $Result.GetResult<Prisma.$BalanceTransactionPayload, S>
+
+  type BalanceTransactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BalanceTransactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BalanceTransactionCountAggregateInputType | true
+    }
+
+  export interface BalanceTransactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BalanceTransaction'], meta: { name: 'BalanceTransaction' } }
+    /**
+     * Find zero or one BalanceTransaction that matches the filter.
+     * @param {BalanceTransactionFindUniqueArgs} args - Arguments to find a BalanceTransaction
+     * @example
+     * // Get one BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BalanceTransactionFindUniqueArgs>(args: SelectSubset<T, BalanceTransactionFindUniqueArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BalanceTransaction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BalanceTransactionFindUniqueOrThrowArgs} args - Arguments to find a BalanceTransaction
+     * @example
+     * // Get one BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BalanceTransactionFindUniqueOrThrowArgs>(args: SelectSubset<T, BalanceTransactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BalanceTransaction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionFindFirstArgs} args - Arguments to find a BalanceTransaction
+     * @example
+     * // Get one BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BalanceTransactionFindFirstArgs>(args?: SelectSubset<T, BalanceTransactionFindFirstArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BalanceTransaction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionFindFirstOrThrowArgs} args - Arguments to find a BalanceTransaction
+     * @example
+     * // Get one BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BalanceTransactionFindFirstOrThrowArgs>(args?: SelectSubset<T, BalanceTransactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BalanceTransactions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BalanceTransactions
+     * const balanceTransactions = await prisma.balanceTransaction.findMany()
+     * 
+     * // Get first 10 BalanceTransactions
+     * const balanceTransactions = await prisma.balanceTransaction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const balanceTransactionWithIdOnly = await prisma.balanceTransaction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BalanceTransactionFindManyArgs>(args?: SelectSubset<T, BalanceTransactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BalanceTransaction.
+     * @param {BalanceTransactionCreateArgs} args - Arguments to create a BalanceTransaction.
+     * @example
+     * // Create one BalanceTransaction
+     * const BalanceTransaction = await prisma.balanceTransaction.create({
+     *   data: {
+     *     // ... data to create a BalanceTransaction
+     *   }
+     * })
+     * 
+     */
+    create<T extends BalanceTransactionCreateArgs>(args: SelectSubset<T, BalanceTransactionCreateArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BalanceTransactions.
+     * @param {BalanceTransactionCreateManyArgs} args - Arguments to create many BalanceTransactions.
+     * @example
+     * // Create many BalanceTransactions
+     * const balanceTransaction = await prisma.balanceTransaction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BalanceTransactionCreateManyArgs>(args?: SelectSubset<T, BalanceTransactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BalanceTransactions and returns the data saved in the database.
+     * @param {BalanceTransactionCreateManyAndReturnArgs} args - Arguments to create many BalanceTransactions.
+     * @example
+     * // Create many BalanceTransactions
+     * const balanceTransaction = await prisma.balanceTransaction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BalanceTransactions and only return the `id`
+     * const balanceTransactionWithIdOnly = await prisma.balanceTransaction.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BalanceTransactionCreateManyAndReturnArgs>(args?: SelectSubset<T, BalanceTransactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BalanceTransaction.
+     * @param {BalanceTransactionDeleteArgs} args - Arguments to delete one BalanceTransaction.
+     * @example
+     * // Delete one BalanceTransaction
+     * const BalanceTransaction = await prisma.balanceTransaction.delete({
+     *   where: {
+     *     // ... filter to delete one BalanceTransaction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BalanceTransactionDeleteArgs>(args: SelectSubset<T, BalanceTransactionDeleteArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BalanceTransaction.
+     * @param {BalanceTransactionUpdateArgs} args - Arguments to update one BalanceTransaction.
+     * @example
+     * // Update one BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BalanceTransactionUpdateArgs>(args: SelectSubset<T, BalanceTransactionUpdateArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BalanceTransactions.
+     * @param {BalanceTransactionDeleteManyArgs} args - Arguments to filter BalanceTransactions to delete.
+     * @example
+     * // Delete a few BalanceTransactions
+     * const { count } = await prisma.balanceTransaction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BalanceTransactionDeleteManyArgs>(args?: SelectSubset<T, BalanceTransactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BalanceTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BalanceTransactions
+     * const balanceTransaction = await prisma.balanceTransaction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BalanceTransactionUpdateManyArgs>(args: SelectSubset<T, BalanceTransactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BalanceTransactions and returns the data updated in the database.
+     * @param {BalanceTransactionUpdateManyAndReturnArgs} args - Arguments to update many BalanceTransactions.
+     * @example
+     * // Update many BalanceTransactions
+     * const balanceTransaction = await prisma.balanceTransaction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BalanceTransactions and only return the `id`
+     * const balanceTransactionWithIdOnly = await prisma.balanceTransaction.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BalanceTransactionUpdateManyAndReturnArgs>(args: SelectSubset<T, BalanceTransactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BalanceTransaction.
+     * @param {BalanceTransactionUpsertArgs} args - Arguments to update or create a BalanceTransaction.
+     * @example
+     * // Update or create a BalanceTransaction
+     * const balanceTransaction = await prisma.balanceTransaction.upsert({
+     *   create: {
+     *     // ... data to create a BalanceTransaction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BalanceTransaction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BalanceTransactionUpsertArgs>(args: SelectSubset<T, BalanceTransactionUpsertArgs<ExtArgs>>): Prisma__BalanceTransactionClient<$Result.GetResult<Prisma.$BalanceTransactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BalanceTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionCountArgs} args - Arguments to filter BalanceTransactions to count.
+     * @example
+     * // Count the number of BalanceTransactions
+     * const count = await prisma.balanceTransaction.count({
+     *   where: {
+     *     // ... the filter for the BalanceTransactions we want to count
+     *   }
+     * })
+    **/
+    count<T extends BalanceTransactionCountArgs>(
+      args?: Subset<T, BalanceTransactionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BalanceTransactionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BalanceTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BalanceTransactionAggregateArgs>(args: Subset<T, BalanceTransactionAggregateArgs>): Prisma.PrismaPromise<GetBalanceTransactionAggregateType<T>>
+
+    /**
+     * Group by BalanceTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BalanceTransactionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BalanceTransactionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BalanceTransactionGroupByArgs['orderBy'] }
+        : { orderBy?: BalanceTransactionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BalanceTransactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBalanceTransactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BalanceTransaction model
+   */
+  readonly fields: BalanceTransactionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BalanceTransaction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BalanceTransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    customer<T extends CustomerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CustomerDefaultArgs<ExtArgs>>): Prisma__CustomerClient<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    warehouses<T extends BalanceTransaction$warehousesArgs<ExtArgs> = {}>(args?: Subset<T, BalanceTransaction$warehousesArgs<ExtArgs>>): Prisma__WarehousesClient<$Result.GetResult<Prisma.$WarehousesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BalanceTransaction model
+   */
+  interface BalanceTransactionFieldRefs {
+    readonly id: FieldRef<"BalanceTransaction", 'String'>
+    readonly customerId: FieldRef<"BalanceTransaction", 'String'>
+    readonly amount: FieldRef<"BalanceTransaction", 'Float'>
+    readonly type: FieldRef<"BalanceTransaction", 'String'>
+    readonly description: FieldRef<"BalanceTransaction", 'String'>
+    readonly paymentMethod: FieldRef<"BalanceTransaction", 'String'>
+    readonly reference: FieldRef<"BalanceTransaction", 'String'>
+    readonly saleId: FieldRef<"BalanceTransaction", 'String'>
+    readonly balanceAfter: FieldRef<"BalanceTransaction", 'Float'>
+    readonly warehouseId: FieldRef<"BalanceTransaction", 'String'>
+    readonly createdAt: FieldRef<"BalanceTransaction", 'DateTime'>
+    readonly updatedAt: FieldRef<"BalanceTransaction", 'DateTime'>
+    readonly sync: FieldRef<"BalanceTransaction", 'Boolean'>
+    readonly syncedAt: FieldRef<"BalanceTransaction", 'DateTime'>
+    readonly isDeleted: FieldRef<"BalanceTransaction", 'Boolean'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BalanceTransaction findUnique
+   */
+  export type BalanceTransactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which BalanceTransaction to fetch.
+     */
+    where: BalanceTransactionWhereUniqueInput
+  }
+
+  /**
+   * BalanceTransaction findUniqueOrThrow
+   */
+  export type BalanceTransactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which BalanceTransaction to fetch.
+     */
+    where: BalanceTransactionWhereUniqueInput
+  }
+
+  /**
+   * BalanceTransaction findFirst
+   */
+  export type BalanceTransactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which BalanceTransaction to fetch.
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BalanceTransactions to fetch.
+     */
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BalanceTransactions.
+     */
+    cursor?: BalanceTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BalanceTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BalanceTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BalanceTransactions.
+     */
+    distinct?: BalanceTransactionScalarFieldEnum | BalanceTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * BalanceTransaction findFirstOrThrow
+   */
+  export type BalanceTransactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which BalanceTransaction to fetch.
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BalanceTransactions to fetch.
+     */
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BalanceTransactions.
+     */
+    cursor?: BalanceTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BalanceTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BalanceTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BalanceTransactions.
+     */
+    distinct?: BalanceTransactionScalarFieldEnum | BalanceTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * BalanceTransaction findMany
+   */
+  export type BalanceTransactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter, which BalanceTransactions to fetch.
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BalanceTransactions to fetch.
+     */
+    orderBy?: BalanceTransactionOrderByWithRelationInput | BalanceTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BalanceTransactions.
+     */
+    cursor?: BalanceTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BalanceTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BalanceTransactions.
+     */
+    skip?: number
+    distinct?: BalanceTransactionScalarFieldEnum | BalanceTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * BalanceTransaction create
+   */
+  export type BalanceTransactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BalanceTransaction.
+     */
+    data: XOR<BalanceTransactionCreateInput, BalanceTransactionUncheckedCreateInput>
+  }
+
+  /**
+   * BalanceTransaction createMany
+   */
+  export type BalanceTransactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BalanceTransactions.
+     */
+    data: BalanceTransactionCreateManyInput | BalanceTransactionCreateManyInput[]
+  }
+
+  /**
+   * BalanceTransaction createManyAndReturn
+   */
+  export type BalanceTransactionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to create many BalanceTransactions.
+     */
+    data: BalanceTransactionCreateManyInput | BalanceTransactionCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BalanceTransaction update
+   */
+  export type BalanceTransactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BalanceTransaction.
+     */
+    data: XOR<BalanceTransactionUpdateInput, BalanceTransactionUncheckedUpdateInput>
+    /**
+     * Choose, which BalanceTransaction to update.
+     */
+    where: BalanceTransactionWhereUniqueInput
+  }
+
+  /**
+   * BalanceTransaction updateMany
+   */
+  export type BalanceTransactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BalanceTransactions.
+     */
+    data: XOR<BalanceTransactionUpdateManyMutationInput, BalanceTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which BalanceTransactions to update
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * Limit how many BalanceTransactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BalanceTransaction updateManyAndReturn
+   */
+  export type BalanceTransactionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * The data used to update BalanceTransactions.
+     */
+    data: XOR<BalanceTransactionUpdateManyMutationInput, BalanceTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which BalanceTransactions to update
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * Limit how many BalanceTransactions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BalanceTransaction upsert
+   */
+  export type BalanceTransactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BalanceTransaction to update in case it exists.
+     */
+    where: BalanceTransactionWhereUniqueInput
+    /**
+     * In case the BalanceTransaction found by the `where` argument doesn't exist, create a new BalanceTransaction with this data.
+     */
+    create: XOR<BalanceTransactionCreateInput, BalanceTransactionUncheckedCreateInput>
+    /**
+     * In case the BalanceTransaction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BalanceTransactionUpdateInput, BalanceTransactionUncheckedUpdateInput>
+  }
+
+  /**
+   * BalanceTransaction delete
+   */
+  export type BalanceTransactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
+    /**
+     * Filter which BalanceTransaction to delete.
+     */
+    where: BalanceTransactionWhereUniqueInput
+  }
+
+  /**
+   * BalanceTransaction deleteMany
+   */
+  export type BalanceTransactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BalanceTransactions to delete
+     */
+    where?: BalanceTransactionWhereInput
+    /**
+     * Limit how many BalanceTransactions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BalanceTransaction.warehouses
+   */
+  export type BalanceTransaction$warehousesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Warehouses
+     */
+    select?: WarehousesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Warehouses
+     */
+    omit?: WarehousesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WarehousesInclude<ExtArgs> | null
+    where?: WarehousesWhereInput
+  }
+
+  /**
+   * BalanceTransaction without action
+   */
+  export type BalanceTransactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BalanceTransaction
+     */
+    select?: BalanceTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BalanceTransaction
+     */
+    omit?: BalanceTransactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BalanceTransactionInclude<ExtArgs> | null
   }
 
 
@@ -23802,6 +25265,7 @@ export namespace Prisma {
     email: 'email',
     address: 'address',
     phone: 'phone',
+    accountBalance: 'accountBalance',
     warehousesId: 'warehousesId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -23811,6 +25275,27 @@ export namespace Prisma {
   };
 
   export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+  export const BalanceTransactionScalarFieldEnum: {
+    id: 'id',
+    customerId: 'customerId',
+    amount: 'amount',
+    type: 'type',
+    description: 'description',
+    paymentMethod: 'paymentMethod',
+    reference: 'reference',
+    saleId: 'saleId',
+    balanceAfter: 'balanceAfter',
+    warehouseId: 'warehouseId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    sync: 'sync',
+    syncedAt: 'syncedAt',
+    isDeleted: 'isDeleted'
+  };
+
+  export type BalanceTransactionScalarFieldEnum = (typeof BalanceTransactionScalarFieldEnum)[keyof typeof BalanceTransactionScalarFieldEnum]
 
 
   export const SupplierScalarFieldEnum: {
@@ -24382,6 +25867,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsListRelationFilter
     balancePayment?: BalancePaymentListRelationFilter
     quotation?: QuotationListRelationFilter
+    balanceTransaction?: BalanceTransactionListRelationFilter
     quotationItem?: QuotationItemListRelationFilter
   }
 
@@ -24408,6 +25894,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsOrderByRelationAggregateInput
     balancePayment?: BalancePaymentOrderByRelationAggregateInput
     quotation?: QuotationOrderByRelationAggregateInput
+    balanceTransaction?: BalanceTransactionOrderByRelationAggregateInput
     quotationItem?: QuotationItemOrderByRelationAggregateInput
   }
 
@@ -24437,6 +25924,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsListRelationFilter
     balancePayment?: BalancePaymentListRelationFilter
     quotation?: QuotationListRelationFilter
+    balanceTransaction?: BalanceTransactionListRelationFilter
     quotationItem?: QuotationItemListRelationFilter
   }, "id" | "warehouseCode">
 
@@ -24979,6 +26467,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Customer"> | string | null
     address?: StringNullableFilter<"Customer"> | string | null
     phone?: StringFilter<"Customer"> | string
+    accountBalance?: FloatFilter<"Customer"> | number
     warehousesId?: StringFilter<"Customer"> | string
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
@@ -24989,6 +26478,7 @@ export namespace Prisma {
     Sale?: SaleListRelationFilter
     saleItem?: SaleItemListRelationFilter
     balancePayment?: BalancePaymentListRelationFilter
+    balanceTransaction?: BalanceTransactionListRelationFilter
     quotation?: QuotationListRelationFilter
   }
 
@@ -25000,6 +26490,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
     phone?: SortOrder
+    accountBalance?: SortOrder
     warehousesId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25010,6 +26501,7 @@ export namespace Prisma {
     Sale?: SaleOrderByRelationAggregateInput
     saleItem?: SaleItemOrderByRelationAggregateInput
     balancePayment?: BalancePaymentOrderByRelationAggregateInput
+    balanceTransaction?: BalanceTransactionOrderByRelationAggregateInput
     quotation?: QuotationOrderByRelationAggregateInput
   }
 
@@ -25024,6 +26516,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Customer"> | string | null
     address?: StringNullableFilter<"Customer"> | string | null
     phone?: StringFilter<"Customer"> | string
+    accountBalance?: FloatFilter<"Customer"> | number
     warehousesId?: StringFilter<"Customer"> | string
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
@@ -25034,6 +26527,7 @@ export namespace Prisma {
     Sale?: SaleListRelationFilter
     saleItem?: SaleItemListRelationFilter
     balancePayment?: BalancePaymentListRelationFilter
+    balanceTransaction?: BalanceTransactionListRelationFilter
     quotation?: QuotationListRelationFilter
   }, "id">
 
@@ -25045,6 +26539,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
     phone?: SortOrder
+    accountBalance?: SortOrder
     warehousesId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25052,8 +26547,10 @@ export namespace Prisma {
     syncedAt?: SortOrderInput | SortOrder
     isDeleted?: SortOrder
     _count?: CustomerCountOrderByAggregateInput
+    _avg?: CustomerAvgOrderByAggregateInput
     _max?: CustomerMaxOrderByAggregateInput
     _min?: CustomerMinOrderByAggregateInput
+    _sum?: CustomerSumOrderByAggregateInput
   }
 
   export type CustomerScalarWhereWithAggregatesInput = {
@@ -25067,12 +26564,123 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     address?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     phone?: StringWithAggregatesFilter<"Customer"> | string
+    accountBalance?: FloatWithAggregatesFilter<"Customer"> | number
     warehousesId?: StringWithAggregatesFilter<"Customer"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
     sync?: BoolWithAggregatesFilter<"Customer"> | boolean
     syncedAt?: DateTimeNullableWithAggregatesFilter<"Customer"> | Date | string | null
     isDeleted?: BoolWithAggregatesFilter<"Customer"> | boolean
+  }
+
+  export type BalanceTransactionWhereInput = {
+    AND?: BalanceTransactionWhereInput | BalanceTransactionWhereInput[]
+    OR?: BalanceTransactionWhereInput[]
+    NOT?: BalanceTransactionWhereInput | BalanceTransactionWhereInput[]
+    id?: StringFilter<"BalanceTransaction"> | string
+    customerId?: StringFilter<"BalanceTransaction"> | string
+    amount?: FloatFilter<"BalanceTransaction"> | number
+    type?: StringFilter<"BalanceTransaction"> | string
+    description?: StringFilter<"BalanceTransaction"> | string
+    paymentMethod?: StringNullableFilter<"BalanceTransaction"> | string | null
+    reference?: StringNullableFilter<"BalanceTransaction"> | string | null
+    saleId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    balanceAfter?: FloatFilter<"BalanceTransaction"> | number
+    warehouseId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    createdAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    sync?: BoolFilter<"BalanceTransaction"> | boolean
+    syncedAt?: DateTimeNullableFilter<"BalanceTransaction"> | Date | string | null
+    isDeleted?: BoolFilter<"BalanceTransaction"> | boolean
+    customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
+    warehouses?: XOR<WarehousesNullableScalarRelationFilter, WarehousesWhereInput> | null
+  }
+
+  export type BalanceTransactionOrderByWithRelationInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    paymentMethod?: SortOrderInput | SortOrder
+    reference?: SortOrderInput | SortOrder
+    saleId?: SortOrderInput | SortOrder
+    balanceAfter?: SortOrder
+    warehouseId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sync?: SortOrder
+    syncedAt?: SortOrderInput | SortOrder
+    isDeleted?: SortOrder
+    customer?: CustomerOrderByWithRelationInput
+    warehouses?: WarehousesOrderByWithRelationInput
+  }
+
+  export type BalanceTransactionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BalanceTransactionWhereInput | BalanceTransactionWhereInput[]
+    OR?: BalanceTransactionWhereInput[]
+    NOT?: BalanceTransactionWhereInput | BalanceTransactionWhereInput[]
+    customerId?: StringFilter<"BalanceTransaction"> | string
+    amount?: FloatFilter<"BalanceTransaction"> | number
+    type?: StringFilter<"BalanceTransaction"> | string
+    description?: StringFilter<"BalanceTransaction"> | string
+    paymentMethod?: StringNullableFilter<"BalanceTransaction"> | string | null
+    reference?: StringNullableFilter<"BalanceTransaction"> | string | null
+    saleId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    balanceAfter?: FloatFilter<"BalanceTransaction"> | number
+    warehouseId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    createdAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    sync?: BoolFilter<"BalanceTransaction"> | boolean
+    syncedAt?: DateTimeNullableFilter<"BalanceTransaction"> | Date | string | null
+    isDeleted?: BoolFilter<"BalanceTransaction"> | boolean
+    customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
+    warehouses?: XOR<WarehousesNullableScalarRelationFilter, WarehousesWhereInput> | null
+  }, "id">
+
+  export type BalanceTransactionOrderByWithAggregationInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    paymentMethod?: SortOrderInput | SortOrder
+    reference?: SortOrderInput | SortOrder
+    saleId?: SortOrderInput | SortOrder
+    balanceAfter?: SortOrder
+    warehouseId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sync?: SortOrder
+    syncedAt?: SortOrderInput | SortOrder
+    isDeleted?: SortOrder
+    _count?: BalanceTransactionCountOrderByAggregateInput
+    _avg?: BalanceTransactionAvgOrderByAggregateInput
+    _max?: BalanceTransactionMaxOrderByAggregateInput
+    _min?: BalanceTransactionMinOrderByAggregateInput
+    _sum?: BalanceTransactionSumOrderByAggregateInput
+  }
+
+  export type BalanceTransactionScalarWhereWithAggregatesInput = {
+    AND?: BalanceTransactionScalarWhereWithAggregatesInput | BalanceTransactionScalarWhereWithAggregatesInput[]
+    OR?: BalanceTransactionScalarWhereWithAggregatesInput[]
+    NOT?: BalanceTransactionScalarWhereWithAggregatesInput | BalanceTransactionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BalanceTransaction"> | string
+    customerId?: StringWithAggregatesFilter<"BalanceTransaction"> | string
+    amount?: FloatWithAggregatesFilter<"BalanceTransaction"> | number
+    type?: StringWithAggregatesFilter<"BalanceTransaction"> | string
+    description?: StringWithAggregatesFilter<"BalanceTransaction"> | string
+    paymentMethod?: StringNullableWithAggregatesFilter<"BalanceTransaction"> | string | null
+    reference?: StringNullableWithAggregatesFilter<"BalanceTransaction"> | string | null
+    saleId?: StringNullableWithAggregatesFilter<"BalanceTransaction"> | string | null
+    balanceAfter?: FloatWithAggregatesFilter<"BalanceTransaction"> | number
+    warehouseId?: StringNullableWithAggregatesFilter<"BalanceTransaction"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"BalanceTransaction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BalanceTransaction"> | Date | string
+    sync?: BoolWithAggregatesFilter<"BalanceTransaction"> | boolean
+    syncedAt?: DateTimeNullableWithAggregatesFilter<"BalanceTransaction"> | Date | string | null
+    isDeleted?: BoolWithAggregatesFilter<"BalanceTransaction"> | boolean
   }
 
   export type SupplierWhereInput = {
@@ -26352,6 +27960,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -26378,6 +27987,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -26404,6 +28014,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -26430,6 +28041,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -27038,6 +28650,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -27047,6 +28660,7 @@ export namespace Prisma {
     Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
     quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -27058,6 +28672,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27067,6 +28682,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -27078,6 +28694,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -27087,6 +28704,7 @@ export namespace Prisma {
     Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -27098,6 +28716,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27107,6 +28726,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -27118,6 +28738,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27134,6 +28755,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -27149,7 +28771,132 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionCreateInput = {
+    id?: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    customer: CustomerCreateNestedOneWithoutBalanceTransactionInput
+    warehouses?: WarehousesCreateNestedOneWithoutBalanceTransactionInput
+  }
+
+  export type BalanceTransactionUncheckedCreateInput = {
+    id?: string
+    customerId: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    warehouseId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
+  export type BalanceTransactionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    customer?: CustomerUpdateOneRequiredWithoutBalanceTransactionNestedInput
+    warehouses?: WarehousesUpdateOneWithoutBalanceTransactionNestedInput
+  }
+
+  export type BalanceTransactionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    warehouseId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionCreateManyInput = {
+    id?: string
+    customerId: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    warehouseId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
+  export type BalanceTransactionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    warehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -28651,6 +30398,12 @@ export namespace Prisma {
     none?: QuotationWhereInput
   }
 
+  export type BalanceTransactionListRelationFilter = {
+    every?: BalanceTransactionWhereInput
+    some?: BalanceTransactionWhereInput
+    none?: BalanceTransactionWhereInput
+  }
+
   export type QuotationItemListRelationFilter = {
     every?: QuotationItemWhereInput
     some?: QuotationItemWhereInput
@@ -28702,6 +30455,10 @@ export namespace Prisma {
   }
 
   export type QuotationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BalanceTransactionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29148,12 +30905,17 @@ export namespace Prisma {
     email?: SortOrder
     address?: SortOrder
     phone?: SortOrder
+    accountBalance?: SortOrder
     warehousesId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     sync?: SortOrder
     syncedAt?: SortOrder
     isDeleted?: SortOrder
+  }
+
+  export type CustomerAvgOrderByAggregateInput = {
+    accountBalance?: SortOrder
   }
 
   export type CustomerMaxOrderByAggregateInput = {
@@ -29164,6 +30926,7 @@ export namespace Prisma {
     email?: SortOrder
     address?: SortOrder
     phone?: SortOrder
+    accountBalance?: SortOrder
     warehousesId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29180,12 +30943,86 @@ export namespace Prisma {
     email?: SortOrder
     address?: SortOrder
     phone?: SortOrder
+    accountBalance?: SortOrder
     warehousesId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     sync?: SortOrder
     syncedAt?: SortOrder
     isDeleted?: SortOrder
+  }
+
+  export type CustomerSumOrderByAggregateInput = {
+    accountBalance?: SortOrder
+  }
+
+  export type CustomerScalarRelationFilter = {
+    is?: CustomerWhereInput
+    isNot?: CustomerWhereInput
+  }
+
+  export type BalanceTransactionCountOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    paymentMethod?: SortOrder
+    reference?: SortOrder
+    saleId?: SortOrder
+    balanceAfter?: SortOrder
+    warehouseId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sync?: SortOrder
+    syncedAt?: SortOrder
+    isDeleted?: SortOrder
+  }
+
+  export type BalanceTransactionAvgOrderByAggregateInput = {
+    amount?: SortOrder
+    balanceAfter?: SortOrder
+  }
+
+  export type BalanceTransactionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    paymentMethod?: SortOrder
+    reference?: SortOrder
+    saleId?: SortOrder
+    balanceAfter?: SortOrder
+    warehouseId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sync?: SortOrder
+    syncedAt?: SortOrder
+    isDeleted?: SortOrder
+  }
+
+  export type BalanceTransactionMinOrderByAggregateInput = {
+    id?: SortOrder
+    customerId?: SortOrder
+    amount?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    paymentMethod?: SortOrder
+    reference?: SortOrder
+    saleId?: SortOrder
+    balanceAfter?: SortOrder
+    warehouseId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sync?: SortOrder
+    syncedAt?: SortOrder
+    isDeleted?: SortOrder
+  }
+
+  export type BalanceTransactionSumOrderByAggregateInput = {
+    amount?: SortOrder
+    balanceAfter?: SortOrder
   }
 
   export type SupplierCountOrderByAggregateInput = {
@@ -29574,11 +31411,6 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type CustomerScalarRelationFilter = {
-    is?: CustomerWhereInput
-    isNot?: CustomerWhereInput
-  }
-
   export type BalancePaymentCountOrderByAggregateInput = {
     id?: SortOrder
     customerId?: SortOrder
@@ -29912,6 +31744,13 @@ export namespace Prisma {
     connect?: QuotationWhereUniqueInput | QuotationWhereUniqueInput[]
   }
 
+  export type BalanceTransactionCreateNestedManyWithoutWarehousesInput = {
+    create?: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput> | BalanceTransactionCreateWithoutWarehousesInput[] | BalanceTransactionUncheckedCreateWithoutWarehousesInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutWarehousesInput | BalanceTransactionCreateOrConnectWithoutWarehousesInput[]
+    createMany?: BalanceTransactionCreateManyWarehousesInputEnvelope
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+  }
+
   export type QuotationItemCreateNestedManyWithoutWarehousesInput = {
     create?: XOR<QuotationItemCreateWithoutWarehousesInput, QuotationItemUncheckedCreateWithoutWarehousesInput> | QuotationItemCreateWithoutWarehousesInput[] | QuotationItemUncheckedCreateWithoutWarehousesInput[]
     connectOrCreate?: QuotationItemCreateOrConnectWithoutWarehousesInput | QuotationItemCreateOrConnectWithoutWarehousesInput[]
@@ -30001,6 +31840,13 @@ export namespace Prisma {
     connectOrCreate?: QuotationCreateOrConnectWithoutWarehousesInput | QuotationCreateOrConnectWithoutWarehousesInput[]
     createMany?: QuotationCreateManyWarehousesInputEnvelope
     connect?: QuotationWhereUniqueInput | QuotationWhereUniqueInput[]
+  }
+
+  export type BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput = {
+    create?: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput> | BalanceTransactionCreateWithoutWarehousesInput[] | BalanceTransactionUncheckedCreateWithoutWarehousesInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutWarehousesInput | BalanceTransactionCreateOrConnectWithoutWarehousesInput[]
+    createMany?: BalanceTransactionCreateManyWarehousesInputEnvelope
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
   }
 
   export type QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput = {
@@ -30176,6 +32022,20 @@ export namespace Prisma {
     update?: QuotationUpdateWithWhereUniqueWithoutWarehousesInput | QuotationUpdateWithWhereUniqueWithoutWarehousesInput[]
     updateMany?: QuotationUpdateManyWithWhereWithoutWarehousesInput | QuotationUpdateManyWithWhereWithoutWarehousesInput[]
     deleteMany?: QuotationScalarWhereInput | QuotationScalarWhereInput[]
+  }
+
+  export type BalanceTransactionUpdateManyWithoutWarehousesNestedInput = {
+    create?: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput> | BalanceTransactionCreateWithoutWarehousesInput[] | BalanceTransactionUncheckedCreateWithoutWarehousesInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutWarehousesInput | BalanceTransactionCreateOrConnectWithoutWarehousesInput[]
+    upsert?: BalanceTransactionUpsertWithWhereUniqueWithoutWarehousesInput | BalanceTransactionUpsertWithWhereUniqueWithoutWarehousesInput[]
+    createMany?: BalanceTransactionCreateManyWarehousesInputEnvelope
+    set?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    disconnect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    delete?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    update?: BalanceTransactionUpdateWithWhereUniqueWithoutWarehousesInput | BalanceTransactionUpdateWithWhereUniqueWithoutWarehousesInput[]
+    updateMany?: BalanceTransactionUpdateManyWithWhereWithoutWarehousesInput | BalanceTransactionUpdateManyWithWhereWithoutWarehousesInput[]
+    deleteMany?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
   }
 
   export type QuotationItemUpdateManyWithoutWarehousesNestedInput = {
@@ -30358,6 +32218,20 @@ export namespace Prisma {
     update?: QuotationUpdateWithWhereUniqueWithoutWarehousesInput | QuotationUpdateWithWhereUniqueWithoutWarehousesInput[]
     updateMany?: QuotationUpdateManyWithWhereWithoutWarehousesInput | QuotationUpdateManyWithWhereWithoutWarehousesInput[]
     deleteMany?: QuotationScalarWhereInput | QuotationScalarWhereInput[]
+  }
+
+  export type BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput = {
+    create?: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput> | BalanceTransactionCreateWithoutWarehousesInput[] | BalanceTransactionUncheckedCreateWithoutWarehousesInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutWarehousesInput | BalanceTransactionCreateOrConnectWithoutWarehousesInput[]
+    upsert?: BalanceTransactionUpsertWithWhereUniqueWithoutWarehousesInput | BalanceTransactionUpsertWithWhereUniqueWithoutWarehousesInput[]
+    createMany?: BalanceTransactionCreateManyWarehousesInputEnvelope
+    set?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    disconnect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    delete?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    update?: BalanceTransactionUpdateWithWhereUniqueWithoutWarehousesInput | BalanceTransactionUpdateWithWhereUniqueWithoutWarehousesInput[]
+    updateMany?: BalanceTransactionUpdateManyWithWhereWithoutWarehousesInput | BalanceTransactionUpdateManyWithWhereWithoutWarehousesInput[]
+    deleteMany?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
   }
 
   export type QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput = {
@@ -30761,6 +32635,13 @@ export namespace Prisma {
     connect?: BalancePaymentWhereUniqueInput | BalancePaymentWhereUniqueInput[]
   }
 
+  export type BalanceTransactionCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput> | BalanceTransactionCreateWithoutCustomerInput[] | BalanceTransactionUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutCustomerInput | BalanceTransactionCreateOrConnectWithoutCustomerInput[]
+    createMany?: BalanceTransactionCreateManyCustomerInputEnvelope
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+  }
+
   export type QuotationCreateNestedManyWithoutSelectedCustomerInput = {
     create?: XOR<QuotationCreateWithoutSelectedCustomerInput, QuotationUncheckedCreateWithoutSelectedCustomerInput> | QuotationCreateWithoutSelectedCustomerInput[] | QuotationUncheckedCreateWithoutSelectedCustomerInput[]
     connectOrCreate?: QuotationCreateOrConnectWithoutSelectedCustomerInput | QuotationCreateOrConnectWithoutSelectedCustomerInput[]
@@ -30787,6 +32668,13 @@ export namespace Prisma {
     connectOrCreate?: BalancePaymentCreateOrConnectWithoutCustomerInput | BalancePaymentCreateOrConnectWithoutCustomerInput[]
     createMany?: BalancePaymentCreateManyCustomerInputEnvelope
     connect?: BalancePaymentWhereUniqueInput | BalancePaymentWhereUniqueInput[]
+  }
+
+  export type BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput> | BalanceTransactionCreateWithoutCustomerInput[] | BalanceTransactionUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutCustomerInput | BalanceTransactionCreateOrConnectWithoutCustomerInput[]
+    createMany?: BalanceTransactionCreateManyCustomerInputEnvelope
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
   }
 
   export type QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput = {
@@ -30848,6 +32736,20 @@ export namespace Prisma {
     deleteMany?: BalancePaymentScalarWhereInput | BalancePaymentScalarWhereInput[]
   }
 
+  export type BalanceTransactionUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput> | BalanceTransactionCreateWithoutCustomerInput[] | BalanceTransactionUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutCustomerInput | BalanceTransactionCreateOrConnectWithoutCustomerInput[]
+    upsert?: BalanceTransactionUpsertWithWhereUniqueWithoutCustomerInput | BalanceTransactionUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: BalanceTransactionCreateManyCustomerInputEnvelope
+    set?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    disconnect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    delete?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    update?: BalanceTransactionUpdateWithWhereUniqueWithoutCustomerInput | BalanceTransactionUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: BalanceTransactionUpdateManyWithWhereWithoutCustomerInput | BalanceTransactionUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
+  }
+
   export type QuotationUpdateManyWithoutSelectedCustomerNestedInput = {
     create?: XOR<QuotationCreateWithoutSelectedCustomerInput, QuotationUncheckedCreateWithoutSelectedCustomerInput> | QuotationCreateWithoutSelectedCustomerInput[] | QuotationUncheckedCreateWithoutSelectedCustomerInput[]
     connectOrCreate?: QuotationCreateOrConnectWithoutSelectedCustomerInput | QuotationCreateOrConnectWithoutSelectedCustomerInput[]
@@ -30904,6 +32806,20 @@ export namespace Prisma {
     deleteMany?: BalancePaymentScalarWhereInput | BalancePaymentScalarWhereInput[]
   }
 
+  export type BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput> | BalanceTransactionCreateWithoutCustomerInput[] | BalanceTransactionUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: BalanceTransactionCreateOrConnectWithoutCustomerInput | BalanceTransactionCreateOrConnectWithoutCustomerInput[]
+    upsert?: BalanceTransactionUpsertWithWhereUniqueWithoutCustomerInput | BalanceTransactionUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: BalanceTransactionCreateManyCustomerInputEnvelope
+    set?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    disconnect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    delete?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    connect?: BalanceTransactionWhereUniqueInput | BalanceTransactionWhereUniqueInput[]
+    update?: BalanceTransactionUpdateWithWhereUniqueWithoutCustomerInput | BalanceTransactionUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: BalanceTransactionUpdateManyWithWhereWithoutCustomerInput | BalanceTransactionUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
+  }
+
   export type QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput = {
     create?: XOR<QuotationCreateWithoutSelectedCustomerInput, QuotationUncheckedCreateWithoutSelectedCustomerInput> | QuotationCreateWithoutSelectedCustomerInput[] | QuotationUncheckedCreateWithoutSelectedCustomerInput[]
     connectOrCreate?: QuotationCreateOrConnectWithoutSelectedCustomerInput | QuotationCreateOrConnectWithoutSelectedCustomerInput[]
@@ -30916,6 +32832,36 @@ export namespace Prisma {
     update?: QuotationUpdateWithWhereUniqueWithoutSelectedCustomerInput | QuotationUpdateWithWhereUniqueWithoutSelectedCustomerInput[]
     updateMany?: QuotationUpdateManyWithWhereWithoutSelectedCustomerInput | QuotationUpdateManyWithWhereWithoutSelectedCustomerInput[]
     deleteMany?: QuotationScalarWhereInput | QuotationScalarWhereInput[]
+  }
+
+  export type CustomerCreateNestedOneWithoutBalanceTransactionInput = {
+    create?: XOR<CustomerCreateWithoutBalanceTransactionInput, CustomerUncheckedCreateWithoutBalanceTransactionInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutBalanceTransactionInput
+    connect?: CustomerWhereUniqueInput
+  }
+
+  export type WarehousesCreateNestedOneWithoutBalanceTransactionInput = {
+    create?: XOR<WarehousesCreateWithoutBalanceTransactionInput, WarehousesUncheckedCreateWithoutBalanceTransactionInput>
+    connectOrCreate?: WarehousesCreateOrConnectWithoutBalanceTransactionInput
+    connect?: WarehousesWhereUniqueInput
+  }
+
+  export type CustomerUpdateOneRequiredWithoutBalanceTransactionNestedInput = {
+    create?: XOR<CustomerCreateWithoutBalanceTransactionInput, CustomerUncheckedCreateWithoutBalanceTransactionInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutBalanceTransactionInput
+    upsert?: CustomerUpsertWithoutBalanceTransactionInput
+    connect?: CustomerWhereUniqueInput
+    update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutBalanceTransactionInput, CustomerUpdateWithoutBalanceTransactionInput>, CustomerUncheckedUpdateWithoutBalanceTransactionInput>
+  }
+
+  export type WarehousesUpdateOneWithoutBalanceTransactionNestedInput = {
+    create?: XOR<WarehousesCreateWithoutBalanceTransactionInput, WarehousesUncheckedCreateWithoutBalanceTransactionInput>
+    connectOrCreate?: WarehousesCreateOrConnectWithoutBalanceTransactionInput
+    upsert?: WarehousesUpsertWithoutBalanceTransactionInput
+    disconnect?: WarehousesWhereInput | boolean
+    delete?: WarehousesWhereInput | boolean
+    connect?: WarehousesWhereUniqueInput
+    update?: XOR<XOR<WarehousesUpdateToOneWithWhereWithoutBalanceTransactionInput, WarehousesUpdateWithoutBalanceTransactionInput>, WarehousesUncheckedUpdateWithoutBalanceTransactionInput>
   }
 
   export type WarehousesCreateNestedOneWithoutSupplierInput = {
@@ -31669,6 +33615,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -31694,6 +33641,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -31735,6 +33683,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -31760,6 +33709,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -31861,6 +33811,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -31869,6 +33820,7 @@ export namespace Prisma {
     Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
     quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -31880,6 +33832,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -31888,6 +33841,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -32363,6 +34317,49 @@ export namespace Prisma {
     data: QuotationCreateManyWarehousesInput | QuotationCreateManyWarehousesInput[]
   }
 
+  export type BalanceTransactionCreateWithoutWarehousesInput = {
+    id?: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    customer: CustomerCreateNestedOneWithoutBalanceTransactionInput
+  }
+
+  export type BalanceTransactionUncheckedCreateWithoutWarehousesInput = {
+    id?: string
+    customerId: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
+  export type BalanceTransactionCreateOrConnectWithoutWarehousesInput = {
+    where: BalanceTransactionWhereUniqueInput
+    create: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput>
+  }
+
+  export type BalanceTransactionCreateManyWarehousesInputEnvelope = {
+    data: BalanceTransactionCreateManyWarehousesInput | BalanceTransactionCreateManyWarehousesInput[]
+  }
+
   export type QuotationItemCreateWithoutWarehousesInput = {
     id?: string
     productName: string
@@ -32504,6 +34501,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Customer"> | string | null
     address?: StringNullableFilter<"Customer"> | string | null
     phone?: StringFilter<"Customer"> | string
+    accountBalance?: FloatFilter<"Customer"> | number
     warehousesId?: StringFilter<"Customer"> | string
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
@@ -32877,6 +34875,43 @@ export namespace Prisma {
     isDeleted?: BoolFilter<"Quotation"> | boolean
   }
 
+  export type BalanceTransactionUpsertWithWhereUniqueWithoutWarehousesInput = {
+    where: BalanceTransactionWhereUniqueInput
+    update: XOR<BalanceTransactionUpdateWithoutWarehousesInput, BalanceTransactionUncheckedUpdateWithoutWarehousesInput>
+    create: XOR<BalanceTransactionCreateWithoutWarehousesInput, BalanceTransactionUncheckedCreateWithoutWarehousesInput>
+  }
+
+  export type BalanceTransactionUpdateWithWhereUniqueWithoutWarehousesInput = {
+    where: BalanceTransactionWhereUniqueInput
+    data: XOR<BalanceTransactionUpdateWithoutWarehousesInput, BalanceTransactionUncheckedUpdateWithoutWarehousesInput>
+  }
+
+  export type BalanceTransactionUpdateManyWithWhereWithoutWarehousesInput = {
+    where: BalanceTransactionScalarWhereInput
+    data: XOR<BalanceTransactionUpdateManyMutationInput, BalanceTransactionUncheckedUpdateManyWithoutWarehousesInput>
+  }
+
+  export type BalanceTransactionScalarWhereInput = {
+    AND?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
+    OR?: BalanceTransactionScalarWhereInput[]
+    NOT?: BalanceTransactionScalarWhereInput | BalanceTransactionScalarWhereInput[]
+    id?: StringFilter<"BalanceTransaction"> | string
+    customerId?: StringFilter<"BalanceTransaction"> | string
+    amount?: FloatFilter<"BalanceTransaction"> | number
+    type?: StringFilter<"BalanceTransaction"> | string
+    description?: StringFilter<"BalanceTransaction"> | string
+    paymentMethod?: StringNullableFilter<"BalanceTransaction"> | string | null
+    reference?: StringNullableFilter<"BalanceTransaction"> | string | null
+    saleId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    balanceAfter?: FloatFilter<"BalanceTransaction"> | number
+    warehouseId?: StringNullableFilter<"BalanceTransaction"> | string | null
+    createdAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    updatedAt?: DateTimeFilter<"BalanceTransaction"> | Date | string
+    sync?: BoolFilter<"BalanceTransaction"> | boolean
+    syncedAt?: DateTimeNullableFilter<"BalanceTransaction"> | Date | string | null
+    isDeleted?: BoolFilter<"BalanceTransaction"> | boolean
+  }
+
   export type QuotationItemUpsertWithWhereUniqueWithoutWarehousesInput = {
     where: QuotationItemWhereUniqueInput
     update: XOR<QuotationItemUpdateWithoutWarehousesInput, QuotationItemUncheckedUpdateWithoutWarehousesInput>
@@ -32966,6 +35001,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -32974,6 +35010,7 @@ export namespace Prisma {
     Warehouses?: WarehousesCreateNestedOneWithoutCustomerInput
     saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
     quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -32985,6 +35022,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32993,6 +35031,7 @@ export namespace Prisma {
     isDeleted?: boolean
     saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -33023,6 +35062,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33048,6 +35088,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33163,6 +35204,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -33171,6 +35213,7 @@ export namespace Prisma {
     Warehouses?: WarehousesUpdateOneWithoutCustomerNestedInput
     saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -33182,6 +35225,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33190,6 +35234,7 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
     saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -33226,6 +35271,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -33251,6 +35297,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -33402,6 +35449,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33427,6 +35475,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33443,6 +35492,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -33451,6 +35501,7 @@ export namespace Prisma {
     Warehouses?: WarehousesCreateNestedOneWithoutCustomerInput
     Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
     quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -33462,6 +35513,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33470,6 +35522,7 @@ export namespace Prisma {
     isDeleted?: boolean
     Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -33617,6 +35670,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -33642,6 +35696,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -33664,6 +35719,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -33672,6 +35728,7 @@ export namespace Prisma {
     Warehouses?: WarehousesUpdateOneWithoutCustomerNestedInput
     Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -33683,6 +35740,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33691,6 +35749,7 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
     Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -33767,6 +35826,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33792,6 +35852,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -33886,6 +35947,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -33911,6 +35973,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34026,6 +36089,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34051,6 +36115,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34188,6 +36253,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34213,6 +36279,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34287,6 +36354,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34312,6 +36380,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34455,6 +36524,49 @@ export namespace Prisma {
     data: BalancePaymentCreateManyCustomerInput | BalancePaymentCreateManyCustomerInput[]
   }
 
+  export type BalanceTransactionCreateWithoutCustomerInput = {
+    id?: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    warehouses?: WarehousesCreateNestedOneWithoutBalanceTransactionInput
+  }
+
+  export type BalanceTransactionUncheckedCreateWithoutCustomerInput = {
+    id?: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    warehouseId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
+  export type BalanceTransactionCreateOrConnectWithoutCustomerInput = {
+    where: BalanceTransactionWhereUniqueInput
+    create: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type BalanceTransactionCreateManyCustomerInputEnvelope = {
+    data: BalanceTransactionCreateManyCustomerInput | BalanceTransactionCreateManyCustomerInput[]
+  }
+
   export type QuotationCreateWithoutSelectedCustomerInput = {
     id?: string
     taxRate: number
@@ -34535,6 +36647,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34560,6 +36673,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34611,6 +36725,22 @@ export namespace Prisma {
     data: XOR<BalancePaymentUpdateManyMutationInput, BalancePaymentUncheckedUpdateManyWithoutCustomerInput>
   }
 
+  export type BalanceTransactionUpsertWithWhereUniqueWithoutCustomerInput = {
+    where: BalanceTransactionWhereUniqueInput
+    update: XOR<BalanceTransactionUpdateWithoutCustomerInput, BalanceTransactionUncheckedUpdateWithoutCustomerInput>
+    create: XOR<BalanceTransactionCreateWithoutCustomerInput, BalanceTransactionUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type BalanceTransactionUpdateWithWhereUniqueWithoutCustomerInput = {
+    where: BalanceTransactionWhereUniqueInput
+    data: XOR<BalanceTransactionUpdateWithoutCustomerInput, BalanceTransactionUncheckedUpdateWithoutCustomerInput>
+  }
+
+  export type BalanceTransactionUpdateManyWithWhereWithoutCustomerInput = {
+    where: BalanceTransactionScalarWhereInput
+    data: XOR<BalanceTransactionUpdateManyMutationInput, BalanceTransactionUncheckedUpdateManyWithoutCustomerInput>
+  }
+
   export type QuotationUpsertWithWhereUniqueWithoutSelectedCustomerInput = {
     where: QuotationWhereUniqueInput
     update: XOR<QuotationUpdateWithoutSelectedCustomerInput, QuotationUncheckedUpdateWithoutSelectedCustomerInput>
@@ -34625,6 +36755,226 @@ export namespace Prisma {
   export type QuotationUpdateManyWithWhereWithoutSelectedCustomerInput = {
     where: QuotationScalarWhereInput
     data: XOR<QuotationUpdateManyMutationInput, QuotationUncheckedUpdateManyWithoutSelectedCustomerInput>
+  }
+
+  export type CustomerCreateWithoutBalanceTransactionInput = {
+    id?: string
+    name: string
+    type: string
+    companyName?: string | null
+    email?: string | null
+    address?: string | null
+    phone: string
+    accountBalance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    Warehouses?: WarehousesCreateNestedOneWithoutCustomerInput
+    Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
+    saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
+    balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
+  }
+
+  export type CustomerUncheckedCreateWithoutBalanceTransactionInput = {
+    id?: string
+    name: string
+    type: string
+    companyName?: string | null
+    email?: string | null
+    address?: string | null
+    phone: string
+    accountBalance?: number
+    warehousesId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
+    saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
+    balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
+  }
+
+  export type CustomerCreateOrConnectWithoutBalanceTransactionInput = {
+    where: CustomerWhereUniqueInput
+    create: XOR<CustomerCreateWithoutBalanceTransactionInput, CustomerUncheckedCreateWithoutBalanceTransactionInput>
+  }
+
+  export type WarehousesCreateWithoutBalanceTransactionInput = {
+    id?: string
+    warehouseCode: string
+    name: string
+    phoneNumber: string
+    email: string
+    description?: string | null
+    address: string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    users?: usersCreateNestedManyWithoutWarehousesInput
+    products?: ProductCreateNestedManyWithoutWarehousesInput
+    customer?: CustomerCreateNestedManyWithoutWarehousesInput
+    saleItem?: SaleItemCreateNestedManyWithoutWarehousesInput
+    sale?: SaleCreateNestedManyWithoutWarehousesInput
+    paymentMethod?: PaymentMethodCreateNestedManyWithoutWarehousesInput
+    purchase?: PurchaseCreateNestedManyWithoutWarehousesInput
+    purchaseItem?: PurchaseItemCreateNestedManyWithoutWarehousesInput
+    supplier?: SupplierCreateNestedManyWithoutWarehousesInput
+    receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
+    balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
+    quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
+  }
+
+  export type WarehousesUncheckedCreateWithoutBalanceTransactionInput = {
+    id?: string
+    warehouseCode: string
+    name: string
+    phoneNumber: string
+    email: string
+    description?: string | null
+    address: string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+    users?: usersUncheckedCreateNestedManyWithoutWarehousesInput
+    products?: ProductUncheckedCreateNestedManyWithoutWarehousesInput
+    customer?: CustomerUncheckedCreateNestedManyWithoutWarehousesInput
+    saleItem?: SaleItemUncheckedCreateNestedManyWithoutWarehousesInput
+    sale?: SaleUncheckedCreateNestedManyWithoutWarehousesInput
+    paymentMethod?: PaymentMethodUncheckedCreateNestedManyWithoutWarehousesInput
+    purchase?: PurchaseUncheckedCreateNestedManyWithoutWarehousesInput
+    purchaseItem?: PurchaseItemUncheckedCreateNestedManyWithoutWarehousesInput
+    supplier?: SupplierUncheckedCreateNestedManyWithoutWarehousesInput
+    receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
+    balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
+    quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
+  }
+
+  export type WarehousesCreateOrConnectWithoutBalanceTransactionInput = {
+    where: WarehousesWhereUniqueInput
+    create: XOR<WarehousesCreateWithoutBalanceTransactionInput, WarehousesUncheckedCreateWithoutBalanceTransactionInput>
+  }
+
+  export type CustomerUpsertWithoutBalanceTransactionInput = {
+    update: XOR<CustomerUpdateWithoutBalanceTransactionInput, CustomerUncheckedUpdateWithoutBalanceTransactionInput>
+    create: XOR<CustomerCreateWithoutBalanceTransactionInput, CustomerUncheckedCreateWithoutBalanceTransactionInput>
+    where?: CustomerWhereInput
+  }
+
+  export type CustomerUpdateToOneWithWhereWithoutBalanceTransactionInput = {
+    where?: CustomerWhereInput
+    data: XOR<CustomerUpdateWithoutBalanceTransactionInput, CustomerUncheckedUpdateWithoutBalanceTransactionInput>
+  }
+
+  export type CustomerUpdateWithoutBalanceTransactionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    Warehouses?: WarehousesUpdateOneWithoutCustomerNestedInput
+    Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
+    saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
+    balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateWithoutBalanceTransactionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
+    warehousesId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
+    saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
+    balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
+  }
+
+  export type WarehousesUpsertWithoutBalanceTransactionInput = {
+    update: XOR<WarehousesUpdateWithoutBalanceTransactionInput, WarehousesUncheckedUpdateWithoutBalanceTransactionInput>
+    create: XOR<WarehousesCreateWithoutBalanceTransactionInput, WarehousesUncheckedCreateWithoutBalanceTransactionInput>
+    where?: WarehousesWhereInput
+  }
+
+  export type WarehousesUpdateToOneWithWhereWithoutBalanceTransactionInput = {
+    where?: WarehousesWhereInput
+    data: XOR<WarehousesUpdateWithoutBalanceTransactionInput, WarehousesUncheckedUpdateWithoutBalanceTransactionInput>
+  }
+
+  export type WarehousesUpdateWithoutBalanceTransactionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    warehouseCode?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    users?: usersUpdateManyWithoutWarehousesNestedInput
+    products?: ProductUpdateManyWithoutWarehousesNestedInput
+    customer?: CustomerUpdateManyWithoutWarehousesNestedInput
+    saleItem?: SaleItemUpdateManyWithoutWarehousesNestedInput
+    sale?: SaleUpdateManyWithoutWarehousesNestedInput
+    paymentMethod?: PaymentMethodUpdateManyWithoutWarehousesNestedInput
+    purchase?: PurchaseUpdateManyWithoutWarehousesNestedInput
+    purchaseItem?: PurchaseItemUpdateManyWithoutWarehousesNestedInput
+    supplier?: SupplierUpdateManyWithoutWarehousesNestedInput
+    receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
+    balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
+    quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
+  }
+
+  export type WarehousesUncheckedUpdateWithoutBalanceTransactionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    warehouseCode?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: StringFieldUpdateOperationsInput | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    users?: usersUncheckedUpdateManyWithoutWarehousesNestedInput
+    products?: ProductUncheckedUpdateManyWithoutWarehousesNestedInput
+    customer?: CustomerUncheckedUpdateManyWithoutWarehousesNestedInput
+    saleItem?: SaleItemUncheckedUpdateManyWithoutWarehousesNestedInput
+    sale?: SaleUncheckedUpdateManyWithoutWarehousesNestedInput
+    paymentMethod?: PaymentMethodUncheckedUpdateManyWithoutWarehousesNestedInput
+    purchase?: PurchaseUncheckedUpdateManyWithoutWarehousesNestedInput
+    purchaseItem?: PurchaseItemUncheckedUpdateManyWithoutWarehousesNestedInput
+    supplier?: SupplierUncheckedUpdateManyWithoutWarehousesNestedInput
+    receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
+    balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
+    quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
   export type WarehousesCreateWithoutSupplierInput = {
@@ -34649,6 +36999,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34674,6 +37025,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34762,6 +37114,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34787,6 +37140,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -34828,6 +37182,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -34853,6 +37208,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35031,6 +37387,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35056,6 +37413,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35129,6 +37487,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35154,6 +37513,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35242,6 +37602,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35267,6 +37628,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35345,6 +37707,7 @@ export namespace Prisma {
     supplier?: SupplierCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35370,6 +37733,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35411,6 +37775,7 @@ export namespace Prisma {
     supplier?: SupplierUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35436,6 +37801,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35447,6 +37813,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -35455,6 +37822,7 @@ export namespace Prisma {
     Warehouses?: WarehousesCreateNestedOneWithoutCustomerInput
     Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
     quotation?: QuotationCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -35466,6 +37834,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35474,6 +37843,7 @@ export namespace Prisma {
     isDeleted?: boolean
     Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutSelectedCustomerInput
   }
 
@@ -35551,6 +37921,7 @@ export namespace Prisma {
     supplier?: SupplierCreateNestedManyWithoutWarehousesInput
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35576,6 +37947,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedCreateNestedManyWithoutWarehousesInput
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35603,6 +37975,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -35611,6 +37984,7 @@ export namespace Prisma {
     Warehouses?: WarehousesUpdateOneWithoutCustomerNestedInput
     Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -35622,6 +37996,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35630,6 +38005,7 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
     Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -35719,6 +38095,7 @@ export namespace Prisma {
     supplier?: SupplierUpdateManyWithoutWarehousesNestedInput
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35744,6 +38121,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedUpdateManyWithoutWarehousesNestedInput
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -35796,6 +38174,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -35805,6 +38184,7 @@ export namespace Prisma {
     Sale?: SaleCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutQuotationInput = {
@@ -35815,6 +38195,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     warehousesId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35824,6 +38205,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedCreateNestedManyWithoutSelectedCustomerInput
     saleItem?: SaleItemUncheckedCreateNestedManyWithoutCustomerInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutCustomerInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutQuotationInput = {
@@ -35853,6 +38235,7 @@ export namespace Prisma {
     supplier?: SupplierCreateNestedManyWithoutWarehousesInput
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35878,6 +38261,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedCreateNestedManyWithoutWarehousesInput
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
     quotationItem?: QuotationItemUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
@@ -35921,6 +38305,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -35930,6 +38315,7 @@ export namespace Prisma {
     Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutQuotationInput = {
@@ -35940,6 +38326,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     warehousesId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35949,6 +38336,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type WarehousesUpsertWithoutQuotationInput = {
@@ -35984,6 +38372,7 @@ export namespace Prisma {
     supplier?: SupplierUpdateManyWithoutWarehousesNestedInput
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -36009,6 +38398,7 @@ export namespace Prisma {
     supplier?: SupplierUncheckedUpdateManyWithoutWarehousesNestedInput
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
     quotationItem?: QuotationItemUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
@@ -36125,6 +38515,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionCreateNestedManyWithoutWarehousesInput
   }
 
   export type WarehousesUncheckedCreateWithoutQuotationItemInput = {
@@ -36150,6 +38541,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedCreateNestedManyWithoutWarehousesInput
     balancePayment?: BalancePaymentUncheckedCreateNestedManyWithoutWarehousesInput
     quotation?: QuotationUncheckedCreateNestedManyWithoutWarehousesInput
+    balanceTransaction?: BalanceTransactionUncheckedCreateNestedManyWithoutWarehousesInput
   }
 
   export type WarehousesCreateOrConnectWithoutQuotationItemInput = {
@@ -36293,6 +38685,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutWarehousesNestedInput
   }
 
   export type WarehousesUncheckedUpdateWithoutQuotationItemInput = {
@@ -36318,6 +38711,7 @@ export namespace Prisma {
     receiptSettings?: ReceiptSettingsUncheckedUpdateManyWithoutWarehousesNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutWarehousesNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutWarehousesNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutWarehousesNestedInput
   }
 
   export type usersCreateManyWarehousesInput = {
@@ -36361,6 +38755,7 @@ export namespace Prisma {
     email?: string | null
     address?: string | null
     phone: string
+    accountBalance?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     sync?: boolean
@@ -36553,6 +38948,23 @@ export namespace Prisma {
     isDeleted?: boolean
   }
 
+  export type BalanceTransactionCreateManyWarehousesInput = {
+    id?: string
+    customerId: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
   export type QuotationItemCreateManyWarehousesInput = {
     id?: string
     quotationId?: string | null
@@ -36682,6 +39094,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -36690,6 +39103,7 @@ export namespace Prisma {
     Sale?: SaleUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -36701,6 +39115,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -36709,6 +39124,7 @@ export namespace Prisma {
     Sale?: SaleUncheckedUpdateManyWithoutSelectedCustomerNestedInput
     saleItem?: SaleItemUncheckedUpdateManyWithoutCustomerNestedInput
     balancePayment?: BalancePaymentUncheckedUpdateManyWithoutCustomerNestedInput
+    balanceTransaction?: BalanceTransactionUncheckedUpdateManyWithoutCustomerNestedInput
     quotation?: QuotationUncheckedUpdateManyWithoutSelectedCustomerNestedInput
   }
 
@@ -36720,6 +39136,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: StringFieldUpdateOperationsInput | string
+    accountBalance?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean
@@ -37294,6 +39711,57 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type BalanceTransactionUpdateWithoutWarehousesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    customer?: CustomerUpdateOneRequiredWithoutBalanceTransactionNestedInput
+  }
+
+  export type BalanceTransactionUncheckedUpdateWithoutWarehousesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionUncheckedUpdateManyWithoutWarehousesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
   export type QuotationItemUpdateWithoutWarehousesInput = {
     id?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
@@ -37657,6 +40125,23 @@ export namespace Prisma {
     isDeleted?: boolean
   }
 
+  export type BalanceTransactionCreateManyCustomerInput = {
+    id?: string
+    amount: number
+    type: string
+    description: string
+    paymentMethod?: string | null
+    reference?: string | null
+    saleId?: string | null
+    balanceAfter: number
+    warehouseId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sync?: boolean
+    syncedAt?: Date | string | null
+    isDeleted?: boolean
+  }
+
   export type QuotationCreateManySelectedCustomerInput = {
     id?: string
     taxRate: number
@@ -37827,6 +40312,57 @@ export namespace Prisma {
     receiptNo?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     warehousesId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    warehouses?: WarehousesUpdateOneWithoutBalanceTransactionNestedInput
+  }
+
+  export type BalanceTransactionUncheckedUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    warehouseId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync?: BoolFieldUpdateOperationsInput | boolean
+    syncedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type BalanceTransactionUncheckedUpdateManyWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    reference?: NullableStringFieldUpdateOperationsInput | string | null
+    saleId?: NullableStringFieldUpdateOperationsInput | string | null
+    balanceAfter?: FloatFieldUpdateOperationsInput | number
+    warehouseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sync?: BoolFieldUpdateOperationsInput | boolean

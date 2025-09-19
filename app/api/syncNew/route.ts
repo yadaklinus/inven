@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import pMap from "p-map";
 
 import onlinePrisma from "@/lib/onlinePrisma";
@@ -33,7 +33,9 @@ async function testConnections() {
   }
 }
 
-export async function POST() {
+export async function POST(req:NextRequest) {
+  const body = await req.json()
+  console.log(body)
   try {
     // Ensure connections before starting sync
     await ensureConnections();
