@@ -207,7 +207,15 @@ const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
 
         useEffect(()=>{
           setEndPoint(`/warehouse/${warehouseId}/${session?.user?.role}`)
-        },[session,warehouseId])
+          if (customers && customers.length > 0) {
+            const guestCustomer = customers.find(
+              (c: any) => c.name?.toLowerCase().trim() === "guest"
+            );
+            if (guestCustomer) {
+              setSelectedCustomer(guestCustomer.id);
+            }
+          }
+        },[session,warehouseId,customers])
 
 
          if(!products && !customers) return (
@@ -216,8 +224,8 @@ const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
 
          
          console.log(customers)
-  const selectedProduct = products?.find((p:any) => p.id === selectedProductId)
-  const selectedCustomerData = customers?.find((c:any) => c.id === selectedCustomer)
+      const selectedProduct = products?.find((p:any) => p.id === selectedProductId)
+      const selectedCustomerData = customers?.find((c:any) => c.id === selectedCustomer)
 
   const fetchCustomerBalance = async (customerId: string) => {
     try {
@@ -301,6 +309,9 @@ const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
     setSelectedProductId("")
     setQuantity("")
     setDiscount(0)
+
+    setQuantity("")
+        productSearchRef.current?.click()
   }
 
   const removeItem = (itemId: string) => {
@@ -654,6 +665,17 @@ const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
     setOpen(false)
     setTimeout(() => quantityInputRef.current?.focus(), 0)
   }
+  const updateItemDiscount = (itemId: string, newDiscount: number) => {
+    setSaleItems(
+      saleItems?.map((item) => {
+        if (item.id === itemId) {
+          const newTotal = item.selectedPrice * item.quantity - newDiscount
+          return { ...item, discount: newDiscount, total: Math.max(0, newTotal) }
+        }
+        return item
+      }),
+    )
+  }
   return (
    <>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -891,60 +913,71 @@ const [balancePaymentAmount, setBalancePaymentAmount] = useState("")
                     </div>
                   ) : (
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead>Price Type</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Qty</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead></TableHead>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Price Type</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Qty</TableHead>
+                        <TableHead>Discount</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {saleItems?.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{item.productName}</div>
+                              <div className="text-sm text-muted-foreground">{item.productBarcode}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={item.priceType === "wholesale" ? "default" : "secondary"}>
+                              {item.priceType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{formatCurrency(item.selectedPrice.toFixed(2))}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={item.quantity}
+                                max={item.limit}
+                                onChange={(e) => updateItemQuantity(item.id, Number.parseInt(e.target.value) || 1)}
+                                className="w-16"
+                              />
+                              <span className="text-xs text-muted-foreground">{item.unit}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              max={item.selectedPrice * item.quantity}
+                              value={item.discount}
+                              onChange={(e) => updateItemDiscount(item.id, Number.parseFloat(e.target.value) || 0)}
+                              className="w-20"
+                              placeholder="0.00"
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">{formatCurrency(item.total)}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {saleItems?.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{item.productName}</div>
-                                <div className="text-sm text-muted-foreground">{item.productBarcode}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={item.priceType === "wholesale" ? "default" : "secondary"}>
-                                {item.priceType}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{formatCurrency(item.selectedPrice.toFixed(2))}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={item.quantity}
-                                  max={item.limit}
-                                 
-                                  onChange={(e) => updateItemQuantity(item.id, Number.parseInt(e.target.value) || 1)}
-                                  className="w-16"
-                                />
-                                <span className="text-xs text-muted-foreground">{item.unit}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-medium">{formatCurrency(item.total)}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeItem(item.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                      ))}
+                    </TableBody>
+                  </Table>
                   )}
                 </CardContent>
               </Card>

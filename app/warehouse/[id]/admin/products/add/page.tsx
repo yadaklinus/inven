@@ -126,7 +126,10 @@ export default function AddProductPage() {
                     <Label htmlFor="product-code">Product Code *</Label>
                     <div className="flex gap-2">
                       <Input id="product-code" value={productCode} onChange={(e)=>setProductCode(e.target.value)} placeholder="Enter product code" className="flex-1" />
-                      <Button variant="outline" size="icon">
+                      <Button onClick={()=>{
+                        const rand = (Math.random()*59)*(Math.random())
+                        setProductCode(`${rand.toString().split(".")[1]}`)
+                      }} variant="outline" size="icon">
                         <Scan className="h-4 w-4" />
                       </Button>
                     </div>

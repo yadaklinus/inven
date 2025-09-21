@@ -54,6 +54,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalculatorCard } from "@/components/shad-cal"
+import { useRouter } from "next/navigation"
 
 // Navigation data for inventory management system
 
@@ -136,6 +137,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
   const warehouseId = getWareHouseId()
   const {data:session} = useSession()
   const [endpoint,setEndPoint] = useState("")
+  const router = useRouter()
 
 
   useEffect(()=>{
@@ -169,8 +171,21 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
           </SidebarMenuItem>
           <SystemStatus/>
         </SidebarMenu>
+        <SidebarMenu>
+          <SidebarMenuItem>
+          <SidebarMenuButton
+              tooltip="Logout"
+              onClick={()=>router.replace(`${endpoint}/sales/add`)}
+              className="bg-blue-500 text-white hover:bg-blue-600 transition"
+            >
+              <ArrowLeftRight className="mr-2 h-4 w-4" />
+              <span>POS - Sales</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        
       <SidebarMenu>
       <SidebarMenuItem>
         <Popover open={open} onOpenChange={setOpen}>
@@ -246,6 +261,11 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
           title: "View Products",
           url: `${endpoint}/products/list`,
           icon: Eye,
+        },
+        {
+          title: "Update Product",
+          url: `${endpoint}/products/update`,
+          icon: Plus,
         },
       ],
     },

@@ -8,10 +8,11 @@ export async function PATCH(req: NextRequest) {
             retailPrice,
             wholesalePrice,
             warehouseId,
-            costPrice
+            costPrice,
+            productQuantity
         } = await req.json()
 
-        console.log(costPrice)
+        console.log("Update request:", { productId, retailPrice, wholesalePrice, costPrice, productQuantity })
 
         // Validate required fields
         if (!productId || !warehouseId) {
@@ -21,17 +22,17 @@ export async function PATCH(req: NextRequest) {
             )
         }
 
-        // Validate that at least one price is provided
-        if (retailPrice === undefined && wholesalePrice === undefined) {
+        // Validate that at least one field is provided for update
+        if (retailPrice === undefined && wholesalePrice === undefined && costPrice === undefined && productQuantity === undefined) {
             return NextResponse.json(
-                { error: "At least one price (retail or wholesale) must be provided" }, 
+                { error: "At least one field (price or quantity) must be provided for update" }, 
                 { status: 400 }
             )
         }
 
         // Verify warehouse exists
         const warehouse = await offlinePrisma.warehouses.findUnique({
-            where: { warehouseCode: warehouseId,isDeleted:false }
+            where: { warehouseCode: warehouseId, isDeleted: false }
         })
             
         if (!warehouse) {
@@ -44,7 +45,7 @@ export async function PATCH(req: NextRequest) {
         // Find the product
         const existingProduct = await offlinePrisma.product.findFirst({
             where: {
-                isDeleted:false,
+                isDeleted: false,
                 OR: [
                     { id: productId },
                     { barcode: productId }
@@ -60,26 +61,37 @@ export async function PATCH(req: NextRequest) {
             )
         }
 
-        // Prepare update data
-        const updateData: any = {}
-        if (retailPrice !== undefined) {
+        // Prepare update data - only include fields that are provided
+        const updateData: any = {
+            sync: false,
+            syncedAt: null,
+            updatedAt: new Date()
+        }
+
+        if (retailPrice !== undefined && retailPrice !== "") {
             updateData.retailPrice = parseFloat(retailPrice)
         }
-        if (wholesalePrice !== undefined) {
+        if (wholesalePrice !== undefined && wholesalePrice !== "") {
             updateData.wholeSalePrice = parseFloat(wholesalePrice)
         }
-        if (costPrice !== undefined) {
+        if (costPrice !== undefined && costPrice !== "") {
             updateData.cost = parseFloat(costPrice)
         }
+        if (productQuantity !== undefined && productQuantity !== "") {
+            updateData.quantity = parseInt(productQuantity)
+        }
 
-        // Update the product prices
+        // Update the product
         const updatedProduct = await offlinePrisma.product.update({
-            where: { id: existingProduct.id,isDeleted:false },
-            data: {...updateData,sync:false}
+            where: { id: existingProduct.id },
+            data: updateData
         })
 
+        console.log(`Product updated: ${existingProduct.id} - marked as unsynced`)
+
         return NextResponse.json({
-            message: "Product prices updated successfully",
+            success: true,
+            message: "Product updated successfully",
             product: {
                 id: updatedProduct.id,
                 name: updatedProduct.name,
@@ -87,15 +99,150 @@ export async function PATCH(req: NextRequest) {
                 retailPrice: updatedProduct.retailPrice,
                 wholesalePrice: updatedProduct.wholeSalePrice,
                 cost: updatedProduct.cost,
-                quantity: updatedProduct.quantity
+                quantity: updatedProduct.quantity,
+                updatedFields: Object.keys(updateData).filter(key => !['sync', 'syncedAt', 'updatedAt'].includes(key))
             }
-        })
+        }, { status: 200 })
 
     } catch (error) {
-        console.error("Error updating product prices:", error)
+        console.error("Error updating product:", error)
         return NextResponse.json(
-            { error: "Internal server error" }, 
+            { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }, 
             { status: 500 }
         )
+    } finally {
+        await offlinePrisma.$disconnect()
+    }
+}
+
+// New endpoint for bulk updates
+export async function POST(req: NextRequest) {
+    try {
+        const { products, warehouseId } = await req.json()
+
+        if (!products || !Array.isArray(products) || products.length === 0) {
+            return NextResponse.json(
+                { error: "Products array is required" }, 
+                { status: 400 }
+            )
+        }
+
+        if (!warehouseId) {
+            return NextResponse.json(
+                { error: "Warehouse ID is required" }, 
+                { status: 400 }
+            )
+        }
+
+        // Verify warehouse exists
+        const warehouse = await offlinePrisma.warehouses.findUnique({
+            where: { warehouseCode: warehouseId, isDeleted: false }
+        })
+            
+        if (!warehouse) {
+            return NextResponse.json(
+                { error: "Warehouse does not exist" }, 
+                { status: 404 }
+            )
+        }
+
+        const results = []
+        const errors = []
+
+        for (const productUpdate of products) {
+            try {
+                const { productId, retailPrice, wholesalePrice, costPrice, productQuantity } = productUpdate
+
+                if (!productId) {
+                    errors.push({ productId, error: "Product ID is required" })
+                    continue
+                }
+
+                // Find the product
+                const existingProduct = await offlinePrisma.product.findFirst({
+                    where: {
+                        isDeleted: false,
+                        OR: [
+                            { id: productId },
+                            { barcode: productId }
+                        ],
+                        warehousesId: warehouseId
+                    }
+                })
+
+                if (!existingProduct) {
+                    errors.push({ productId, error: "Product not found in this warehouse" })
+                    continue
+                }
+
+                // Prepare update data
+                const updateData: any = {
+                    sync: false,
+                    syncedAt: null,
+                    updatedAt: new Date()
+                }
+
+                if (retailPrice !== undefined && retailPrice !== "") {
+                    updateData.retailPrice = parseFloat(retailPrice)
+                }
+                if (wholesalePrice !== undefined && wholesalePrice !== "") {
+                    updateData.wholeSalePrice = parseFloat(wholesalePrice)
+                }
+                if (costPrice !== undefined && costPrice !== "") {
+                    updateData.cost = parseFloat(costPrice)
+                }
+                if (productQuantity !== undefined && productQuantity !== "") {
+                    updateData.quantity = parseInt(productQuantity)
+                }
+
+                // Skip if no fields to update
+                const fieldsToUpdate = Object.keys(updateData).filter(key => !['sync', 'syncedAt', 'updatedAt'].includes(key))
+                if (fieldsToUpdate.length === 0) {
+                    continue
+                }
+
+                // Update the product
+                const updatedProduct = await offlinePrisma.product.update({
+                    where: { id: existingProduct.id },
+                    data: updateData
+                })
+
+                results.push({
+                    productId: existingProduct.id,
+                    name: existingProduct.name,
+                    barcode: existingProduct.barcode,
+                    updatedFields: fieldsToUpdate,
+                    success: true
+                })
+
+            } catch (error) {
+                console.error(`Error updating product ${productUpdate.productId}:`, error)
+                errors.push({ 
+                    productId: productUpdate.productId, 
+                    error: error instanceof Error ? error.message : "Update failed" 
+                })
+            }
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: `Bulk update completed. ${results.length} products updated, ${errors.length} errors.`,
+            results,
+            errors,
+            summary: {
+                totalProcessed: products.length,
+                successful: results.length,
+                failed: errors.length
+            }
+        }, { status: 200 })
+
+    } catch (error) {
+        console.error("Error in bulk update:", error)
+        return NextResponse.json(
+            { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }, 
+            { status: 500 }
+        )
+    } finally {
+        await offlinePrisma.$disconnect()
     }
 }
