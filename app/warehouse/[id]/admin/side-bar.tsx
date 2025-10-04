@@ -152,7 +152,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
   // const isOnline = useConnectionCheck()
   
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar className="mb-4" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -169,12 +169,17 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SystemStatus/>
+          <SidebarMenuItem>
+           
+            <SidebarMenuButton>
+              <SystemStatus/>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem>
           <SidebarMenuButton
-              tooltip="Logout"
+              tooltip="POS"
               onClick={()=>router.replace(`${endpoint}/sales/add`)}
               className="bg-blue-500 text-white hover:bg-blue-600 transition"
             >
@@ -192,7 +197,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
           <PopoverTrigger asChild>
             <SidebarMenuButton
               tooltip="Calculator"
-              className="text-white hover:bg-blue-600 transition"
+              className="hover:bg-blue-600 transition"
             >
               <Calculator className="mr-2 h-4 w-4" />
               <span>Calculator</span>
@@ -347,7 +352,15 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <Button onClick={()=>signOut()} style={{display:"none"}} className="bg-red-500">Logout</Button>
+        <SidebarMenu>
+          <SidebarMenuItem>
+          <SidebarMenuButton
+            >
+              
+              <span></span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
 
       </SidebarContent>
       <SidebarRail />

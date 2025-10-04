@@ -163,13 +163,15 @@ export function PurchaseSidebar({ ...props }: React.ComponentProps<typeof Sideba
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{data?.companyName}</span>
-                  <span className="truncate text-xs">Admin Management System</span>
+                  <span className="truncate text-xs">Purchase Management System</span>
                   {/* {isOnline ? "online" : "ofline"} */}
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SystemStatus/>
+          <SidebarMenuItem>
+            <SystemStatus/>
+          </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem>
