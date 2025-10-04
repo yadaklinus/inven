@@ -39,7 +39,7 @@ export default function RootLayout({
       <head />
       <body>
         <SessionAppProvider>
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+        <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div >
             <main >
               <Toaster/>

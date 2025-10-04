@@ -8,7 +8,7 @@ export async function POST(
    
    const {warehouseId, productId} = await req.json()
 
-    console.log(warehouseId)
+    //console.log(warehouseId)
 
     if (!warehouseId) {
       return NextResponse.json(

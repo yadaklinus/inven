@@ -7,7 +7,7 @@ export async function POST(req:NextRequest) {
   try {
     const { warehouseId } = await req.json()
 
-    console.log(warehouseId)
+    //console.log(warehouseId)
 
     // Get warehouse info first
     const warehouse = await prisma.warehouses.findUnique({

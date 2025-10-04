@@ -1,6 +1,6 @@
 "use client"
 import { useOnlineStatus } from "@/hooks/check-online";
-import { useAutoSync } from "@/hooks/sync-data";
+
 
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -27,10 +27,10 @@ export default function SupAdminLayout({children}:{children:React.ReactNode}){
         }
     
         // Start interval only if online
-        if (online) {
-          syncNow(); // Run once immediately
-          intervalRef.current = setInterval(syncNow, 1000 * 30); // every 5 minutes
-        }
+        // if (online) {
+        //   syncNow(); // Run once immediately
+        //   intervalRef.current = setInterval(syncNow, 1000 * 30); // every 5 minutes
+        // }
     
         // Cleanup when offline or unmounted
         return () => {
@@ -41,7 +41,7 @@ export default function SupAdminLayout({children}:{children:React.ReactNode}){
         };
       }, [online]);
   
-      // useAutoSync()
+      
     
     
     useEffect(()=>{

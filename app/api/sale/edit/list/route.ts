@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     });
 
    
-    console.log(data)
+    //console.log(data)
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching sales data:", error);

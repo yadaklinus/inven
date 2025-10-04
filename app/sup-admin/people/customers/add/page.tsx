@@ -69,7 +69,7 @@ export default function AddCustomerPage() {
 
     
     await axios.post("/api/customer",newCustomer)
-   console.log(newCustomer)
+   //console.log(newCustomer)
     setIsSubmitting(false)
     setShowSuccessDialog(true)
   }

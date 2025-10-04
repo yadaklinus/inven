@@ -32,10 +32,10 @@ export default function Home() {
     }
 
     // Start interval only if online
-    if (online) {
-      syncNow(); // Run once immediately
-      intervalRef.current = setInterval(syncNow, 1000 * 30); // every 5 minutes
-    }
+    // if (online) {
+    //   syncNow(); // Run once immediately
+    //   intervalRef.current = setInterval(syncNow, 1000 * 30); // every 5 minutes
+    // }
 
     // Cleanup when offline or unmounted
     return () => {
@@ -60,9 +60,9 @@ export default function Home() {
             radius: "full",
             variant: "shadow",
           })}
-          href={'/login'}
+          href={'/user/login'}
         >
-          Sup Admin
+          Login
         </Link>
        
       </div>

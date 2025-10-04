@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
             purchaseItemIds.push(purchaseItem.id);
             productIds.push(items[i].productId);
 
-            console.log(`Processing product: ${items[i].productId} for purchase`);
+           // console.log(`Processing product: ${items[i].productId} for purchase`);
 
             // Update product quantity (increase stock for purchases) and mark as unsynced
             await offlinePrisma.product.update({
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        console.log(`Purchase created: ${purchase.referenceNo} with ${items.length} items - all related records marked as unsynced`);
+        //console.log(`Purchase created: ${purchase.referenceNo} with ${items.length} items - all related records marked as unsynced`);
 
         return NextResponse.json({ 
             message: "Purchase order created successfully",
@@ -197,7 +197,7 @@ export async function DELETE(req: NextRequest) {
             }
         });
 
-        console.log(`Purchase deleted: ${purchaseId} - all related records marked as unsynced for deletion sync`);
+        //console.log(`Purchase deleted: ${purchaseId} - all related records marked as unsynced for deletion sync`);
 
         return NextResponse.json({
             message: "Purchase deleted successfully",

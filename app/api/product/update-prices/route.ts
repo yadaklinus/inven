@@ -12,7 +12,7 @@ export async function PATCH(req: NextRequest) {
             productQuantity
         } = await req.json()
 
-        console.log("Update request:", { productId, retailPrice, wholesalePrice, costPrice, productQuantity })
+        //console.log("Update request:", { productId, retailPrice, wholesalePrice, costPrice, productQuantity })
 
         // Validate required fields
         if (!productId || !warehouseId) {
@@ -87,7 +87,7 @@ export async function PATCH(req: NextRequest) {
             data: updateData
         })
 
-        console.log(`Product updated: ${existingProduct.id} - marked as unsynced`)
+        //console.log(`Product updated: ${existingProduct.id} - marked as unsynced`)
 
         return NextResponse.json({
             success: true,

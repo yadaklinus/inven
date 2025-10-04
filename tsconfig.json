@@ -25,6 +25,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/sales-vs-purchases-chart.jsx", "app/login/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/sales-vs-purchases-chart.jsx", "app/login/page.jsx", "app/warehouse/[id]/admin/sync/page.jsx"],
   "exclude": ["node_modules"]
 }

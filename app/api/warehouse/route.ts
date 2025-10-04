@@ -55,7 +55,7 @@ export async function POST(req:NextRequest){
 export async function PUT(req:NextRequest){
     const data = await req.json()
 
-    console.log(data)
+    //console.log(data)
 
     // return
 
@@ -74,7 +74,7 @@ export async function PUT(req:NextRequest){
             address
         }
      })
-     console.log(warehouses)
+     //console.log(warehouses)
      return NextResponse.json(warehouses,{status:201})
     } catch (error) {
      return NextResponse.json(error,{status:500})

@@ -285,7 +285,7 @@ export default function AddPurchasePage() {
     }
 
     // Save to localStorage (replace with API call)
-    console.log(purchaseData)
+    //console.log(purchaseData)
     
 
     setCreatedPurchase(purchaseData)

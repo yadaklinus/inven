@@ -47,7 +47,7 @@ export async function POST(req:NextRequest){
             }
         })
 
-        console.log(`New product created: ${product.id} - marked as unsynced`);
+        //console.log(`New product created: ${product.id} - marked as unsynced`);
         
         return NextResponse.json(product,{status:201})
     }catch(error){
@@ -91,7 +91,7 @@ export async function PUT(req:NextRequest){
             }
         });
 
-        console.log(`Product updated: ${productId} - marked as unsynced`);
+        //console.log(`Product updated: ${productId} - marked as unsynced`);
         
         return NextResponse.json(updatedProduct, {status: 200});
     } catch(error) {
@@ -125,7 +125,7 @@ export async function DELETE(req:NextRequest){
             }
         })
 
-        console.log(`Product deleted: ${productId} - marked as unsynced for deletion sync`);
+       // console.log(`Product deleted: ${productId} - marked as unsynced for deletion sync`);
 
         return NextResponse.json(deleteProduct,{status:200})
     } catch (error) {

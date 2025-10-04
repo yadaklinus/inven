@@ -64,7 +64,7 @@ export async function POST(req:NextRequest){
                 profit:items[i].salePrice - items[i].costPrice,
             }
         })
-        console.log(items[i].productId)
+        //console.log(items[i].productId)
         await offlinePrisma.product.update({
             where:{id:items[i].productId,isDeleted:false},
             data:{quantity:{

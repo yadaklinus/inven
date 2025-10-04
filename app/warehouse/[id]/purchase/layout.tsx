@@ -1,6 +1,6 @@
 "use client"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { WarehouseAppSidebar } from "./side-bar";
+import { PurchaseSidebar } from "./side-bar";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -41,7 +41,7 @@ export default function SupAdminLayout({children}:{children:React.ReactNode}){
     return(
         <>
         <SidebarProvider>
-            <WarehouseAppSidebar/>
+            <PurchaseSidebar/>
             <SidebarInset>
                     {children}
             </SidebarInset>

@@ -267,7 +267,7 @@ XLSX.writeFile(workbook, data.filename.replace(".csv", ".xlsx"));
       if (response.ok) {
         const data = await response.json()
         // Handle the report data as needed
-        console.log('Monthly report generated:', data)
+        //console.log('Monthly report generated:', data)
       }
     } catch (error) {
       console.error('Error generating monthly report:', error)

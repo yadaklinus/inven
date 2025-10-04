@@ -46,7 +46,7 @@ export async function POST(req:NextRequest){
         })
 
         
-        console.log(`New customer created: ${newCustomer.id} - marked as unsynced`);
+        //console.log(`New customer created: ${newCustomer.id} - marked as unsynced`);
         
         return NextResponse.json({
             message: "Customer created successfully",
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest) {
             }
         });
 
-        console.log(`Customer updated: ${customerId} - marked as unsynced`);
+        //console.log(`Customer updated: ${customerId} - marked as unsynced`);
 
         return NextResponse.json({
             message: "Customer updated successfully",
@@ -133,7 +133,7 @@ export async function DELETE(req: NextRequest) {
             }
         });
 
-        console.log(`Customer deleted: ${customerId} - marked as unsynced for deletion sync`);
+        //console.log(`Customer deleted: ${customerId} - marked as unsynced for deletion sync`);
 
         return NextResponse.json({
             message: "Customer deleted successfully",

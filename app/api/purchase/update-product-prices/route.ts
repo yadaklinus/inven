@@ -78,7 +78,7 @@ export async function PATCH(req: NextRequest) {
             data: {...updateData,sync:false}
         })
 
-        console.log(updateData)
+        //console.log(updateData)
         
 
         return NextResponse.json({

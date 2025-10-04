@@ -19,7 +19,6 @@ import { redirect } from "next/dist/server/api-utils"
 import { useRouter } from "next/navigation"
 import { useOnlineStatus } from "@/hooks/check-online"
 import axios from "axios"
-import { useAutoSync } from "@/hooks/sync-data";
 
 
 export default function LoginForm() {
@@ -38,7 +37,7 @@ export default function LoginForm() {
 
   const [loading,setLoading] = useState(false)
   
-  // useAutoSync()
+
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
