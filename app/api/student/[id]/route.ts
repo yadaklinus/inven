@@ -10,12 +10,24 @@ export async function GET(
             where: { id: params.id, isDeleted: false },
             include: {
                 Consultation: {
+                    where: { isDeleted: false },
                     orderBy: { createdAt: 'desc' },
-                    take: 10 // Get last 10 consultations
+                    include: {
+                        consultationItems: {
+                            include: {
+                                product: {
+                                    select: {
+                                        name: true,
+                                        barcode: true
+                                    }
+                                }
+                            }
+                        },
+                        paymentMethod: true
+                    }
                 },
                 balanceTransaction: {
-                    orderBy: { createdAt: 'desc' },
-                    take: 10 // Get last 10 transactions
+                    orderBy: { createdAt: 'desc' }
                 }
             }
         });
