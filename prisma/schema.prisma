@@ -103,9 +103,9 @@ model Warehouses {
   address         String
   users           users[]
   products        Product[]
-  customer        Customer[]
-  saleItem        SaleItem[]
-  sale            Sale[]
+  student         Student[]
+  consultationItem ConsultationItem[]
+  consultation    Consultation[]
   paymentMethod   PaymentMethod[]
   purchase        Purchase[]
   purchaseItem    PurchaseItem[]
@@ -120,11 +120,14 @@ model Warehouses {
   isDeleted       Boolean           @default(false)
 }
 
-model Sale {
+model Consultation {
   id                 String           @id @default(cuid())
-  saleItems          SaleItem[]
-  selectedCustomerId String? // reference to Customer
-  selectedCustomer   Customer?        @relation(fields: [selectedCustomerId], references: [id])
+  consultationItems  ConsultationItem[]
+  selectedStudentId  String? // reference to Student
+  selectedStudent    Student?         @relation(fields: [selectedStudentId], references: [id])
+  diagnosis          String?          // What is wrong with the student
+  symptoms           String?          // Symptoms described
+  consultantNotes    String?          // Additional notes from consultant
   taxRate            Float
   subTotal           Float
   notes              String?
@@ -144,10 +147,10 @@ model Sale {
   isDeleted          Boolean          @default(false)
 }
 
-model SaleItem {
+model ConsultationItem {
   id            String      @id @default(cuid())
-  saleId        String?
-  sale          Sale?       @relation(fields: [saleId], references: [invoiceNo])
+  consultationId String?
+  consultation  Consultation? @relation(fields: [consultationId], references: [invoiceNo])
   productId     String?
   product       Product?    @relation(fields: [productId], references: [id])
   productName   String
@@ -155,6 +158,10 @@ model SaleItem {
   selectedPrice Float
   priceType     String
   quantity      Int
+  dosage        String?     // How the medicine should be taken
+  frequency     String?     // How often to take (e.g., "twice daily", "as needed")
+  duration      String?     // How long to take (e.g., "5 days", "until finished")
+  instructions  String?     // Additional instructions
   discount      Float
   total         Float
   profit        Float
@@ -162,8 +169,8 @@ model SaleItem {
   warehousesId  String?
   sync          Boolean     @default(false) // Sync field
   syncedAt      DateTime? // When last synced
-  Customer      Customer?   @relation(fields: [customerId], references: [id])
-  customerId    String?
+  Student       Student?    @relation(fields: [studentId], references: [id])
+  studentId     String?
   isDeleted     Boolean     @default(false)
 }
 
@@ -215,19 +222,25 @@ model PurchaseItem {
   isDeleted            Boolean     @default(false)
 }
 
-model Customer {
+model Student {
   id                  String              @id @default(uuid())
   name                String
-  type                String
-  companyName         String?
+  matricNumber        String              @unique
   email               String?
-  address             String?
   phone               String
+  address             String?
+  bloodGroup          String?             // A+, A-, B+, B-, AB+, AB-, O+, O-
+  genotype            String?             // AA, AS, SS
+  allergies           String?             // Comma-separated list of allergies
+  emergencyContact    String?
+  emergencyPhone      String?
+  department          String?             // Student's department/faculty
+  level              String?             // Student's level (100, 200, 300, etc.)
   accountBalance      Float               @default(0) // Add this field
   Warehouses          Warehouses?         @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId        String
-  Sale                Sale[]
-  saleItem            SaleItem[]
+  Consultation        Consultation[]
+  consultationItem    ConsultationItem[]
   balancePayment      BalancePayment[]
   balanceTransaction  BalanceTransaction[] // Add this relation
   quotation           Quotation[]
@@ -240,8 +253,8 @@ model Customer {
 
 model BalanceTransaction {
   id           String      @id @default(uuid())
-  customerId   String
-  customer     Customer    @relation(fields: [customerId], references: [id])
+  studentId    String
+  student      Student     @relation(fields: [studentId], references: [id])
   amount       Float
   type         String      // CREDIT or DEBIT
   description  String
@@ -307,8 +320,8 @@ model PaymentMethod {
   // notes        String?
   Warehouses   Warehouses? @relation(fields: [warehousesId], references: [warehouseCode])
   warehousesId String?
-  Sale         Sale?       @relation(fields: [saleId], references: [invoiceNo])
-  saleId       String?
+  Consultation Consultation? @relation(fields: [consultationId], references: [invoiceNo])
+  consultationId String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   sync         Boolean     @default(false) // Sync field
@@ -381,10 +394,10 @@ model ReceiptSettings {
 
 model BalancePayment {
   id            String      @id @default(uuid())
-  customerId    String
-  customer      Customer    @relation(fields: [customerId], references: [id])
-  saleId        String?
-  sale          Sale?       @relation(fields: [saleId], references: [invoiceNo])
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id])
+  consultationId String?
+  consultation  Consultation? @relation(fields: [consultationId], references: [invoiceNo])
   amount        Float
   paymentMethod String
   receiptNo     String      @unique
@@ -401,15 +414,15 @@ model BalancePayment {
 model Quotation {
   id                 String          @id @default(cuid())
   quotationItems     QuotationItem[]
-  selectedCustomerId String? // reference to Customer
-  selectedCustomer   Customer?       @relation(fields: [selectedCustomerId], references: [id])
+  selectedStudentId  String? // reference to Student
+  selectedStudent    Student?        @relation(fields: [selectedStudentId], references: [id])
   taxRate            Float
   subTotal           Float
   notes              String?
   grandTotal         Float
   validUntil         DateTime? // Quotation expiry date
   status             String          @default("pending") // pending, accepted, rejected, converted
-  convertedToSaleId  String? // If converted to sale, reference to Sale
+  convertedToConsultationId String? // If converted to consultation, reference to Consultation
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   warehousesId       String?
