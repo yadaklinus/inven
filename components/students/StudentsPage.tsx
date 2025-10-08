@@ -33,6 +33,7 @@ import { getWareHouseId } from "@/hooks/get-werehouseId"
 import fetchWareHouseData from "@/hooks/fetch-invidual-data"
 import { Loading } from "@/components/loading"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import {
   Dialog,
@@ -51,6 +52,7 @@ export default function StudentsPage() {
   const [deleting, setDeleting] = useState(false)
   
   const warehouseId = getWareHouseId()
+  const router = useRouter()
     
   const {data:studentsData,loading,error,refetch} = fetchWareHouseData("/api/student/list",{warehouseId})
   const [endPoint, setEndPoint] = useState("")
@@ -98,6 +100,10 @@ export default function StudentsPage() {
     } finally {
       setDeleting(false)
     }
+  }
+
+  const handleStudentClick = (studentId: string) => {
+    router.push(`${endPoint}/people/students/${studentId}`)
   }
 
   return (
@@ -190,7 +196,11 @@ export default function StudentsPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredStudents.map((student:any) => (
-                    <TableRow key={student.id}>
+                    <TableRow 
+                      key={student.id} 
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleStudentClick(student.id)}
+                    >
                       <TableCell className="font-medium">
                         <div>
                           <div>{student.name}</div>
@@ -234,7 +244,11 @@ export default function StudentsPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button 
+                              variant="ghost" 
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -242,9 +256,9 @@ export default function StudentsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem asChild>
-                              <Link href={`${endPoint}/people/students/activities/${student.id}`}>
-                                <Activity className="mr-2 h-4 w-4" />
-                                View Medical History
+                              <Link href={`${endPoint}/people/students/${student.id}`}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
@@ -256,7 +270,10 @@ export default function StudentsPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               className="text-red-600"
-                              onClick={() => setDeleteStudentId(student.id)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDeleteStudentId(student.id)
+                              }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete Student
