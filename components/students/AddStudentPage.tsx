@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState } from "react" // Removed useEffect
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +50,7 @@ export default function AddStudentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Original validation restored
     if (!formData.name || !formData.matricNumber || !formData.phone) {
       toast.error("Please fill in all required fields")
       return

@@ -25,21 +25,21 @@ export async function GET(req: NextRequest) {
         }
 
         // Get all sales for this product
-        const saleItems = await offlinePrisma.saleItem.findMany({
+        const consultationItems = await offlinePrisma.consultationItem.findMany({
             where: { 
                 productId,
                 isDeleted:false,
                 ...(warehouseId && { warehousesId: warehouseId })
             },
             include: {
-                sale: {
+                consultation: {
                     include: {
-                        selectedCustomer: true
+                        selectedStudent: true
                     }
                 }
             },
             orderBy: {
-                sale: {
+                consultation: {
                     createdAt: 'desc'
                 }
             }
@@ -68,18 +68,18 @@ export async function GET(req: NextRequest) {
         const stockMovements = []
 
         // Add sales (stock decrements)
-        for (const saleItem of saleItems) {
+        for (const consultationItem of consultationItems) {
             stockMovements.push({
-                id: saleItem.id,
+                id: consultationItem.id,
                 type: 'SALE',
-                date: saleItem.sale?.createdAt || new Date(),
-                quantity: -saleItem.quantity, // Negative for sales
-                reference: saleItem.sale?.invoiceNo || 'N/A',
-                customer: saleItem.sale?.selectedCustomer?.name || 'N/A',
+                date: consultationItem.consultation?.createdAt || new Date(),
+                quantity: -consultationItem.quantity, // Negative for sales
+                reference: consultationItem.consultation?.invoiceNo || 'N/A',
+                customer: consultationItem.consultation?.selectedStudent?.name || 'N/A',
                 supplier: null,
-                unitPrice: saleItem.selectedPrice,
-                total: saleItem.total,
-                notes: `Sale to ${saleItem.sale?.selectedCustomer?.name || 'Customer'}`
+                unitPrice: consultationItem.selectedPrice,
+                total: consultationItem.total,
+                notes: `Sale to ${consultationItem.consultation?.selectedStudent?.name || 'Customer'}`
             })
         }
 
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
             },
             movements: movementsWithBalance,
             summary: {
-                totalSales: saleItems.reduce((sum, item) => sum + item.quantity, 0),
+                totalSales: consultationItems.reduce((sum, item) => sum + item.quantity, 0),
                 totalPurchases: purchaseItems.reduce((sum, item) => sum + item.quantity, 0),
                 totalMovements: stockMovements.length
             }

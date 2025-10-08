@@ -232,8 +232,13 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
         },
         {
           title: "View Consultations",
-          url: `${endpoint}/sales/list`,
+          url: `${endpoint}/sales/consultations`,
           icon: Eye,
+        },
+        {
+          title: "View Sales",
+          url: `${endpoint}/sales/list`,
+          icon: Receipt,
         },
       ],
     },
@@ -305,7 +310,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
                   },
                   {
                     title: "Students",
-                    url: `${endpoint}/people/customers`,
+                    url: `${endpoint}/people/students`,
                     icon: UserCheck,
                   },
                   {
