@@ -1,6 +1,6 @@
-import CustomersPage from "@/components/customers/CustomersPage";
+import StudentsPage from "@/components/students/StudentsPage";
 
 
-export default function AdminCustomersPage() {
-  return <CustomersPage/>;
+export default function AdminStudentsPage() {
+  return <StudentsPage/>;
 }

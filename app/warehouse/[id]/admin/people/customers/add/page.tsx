@@ -1,6 +1,6 @@
-import AddCustomerPage from "@/components/customers/AddCustomerPage";
+import AddStudentPage from "@/components/students/AddStudentPage";
 
 
-export default function AdminAddCustomerPage() {
-  return <AddCustomerPage/>;
+export default function AdminAddStudentPage() {
+  return <AddStudentPage/>;
 }

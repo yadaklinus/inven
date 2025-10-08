@@ -10,7 +10,7 @@ import {
   Package,
   Plus,
   Settings,
-  ShoppingCart,
+  Stethoscope,
   FileText,
   Truck,
   ArrowLeftRight,
@@ -163,7 +163,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{data?.companyName}</span>
-                  <span className="truncate text-xs">Admin Management System</span>
+                  <span className="truncate text-xs">Clinic Management System</span>
                   {/* {isOnline ? "online" : "ofline"} */}
                 </div>
               </a>
@@ -179,12 +179,12 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
         <SidebarMenu>
           <SidebarMenuItem>
           <SidebarMenuButton
-              tooltip="POS"
+              tooltip="Consultation"
               onClick={()=>router.replace(`${endpoint}/sales/add`)}
               className="bg-blue-500 text-white hover:bg-blue-600 transition"
             >
-              <ArrowLeftRight className="mr-2 h-4 w-4" />
-              <span>POS - Sales</span>
+              <Stethoscope className="mr-2 h-4 w-4" />
+              <span>New Consultation</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -220,18 +220,18 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
                   icon: Home,
                 },
               ]} />
-        <NavSection title="Inventory" items={[
+        <NavSection title="Clinic Operations" items={[
     {
-      title: "Sales",
-      icon: ShoppingCart,
+      title: "Consultations",
+      icon: Stethoscope,
       items: [
         {
-          title: "Add Sale",
+          title: "New Consultation",
           url: `${endpoint}/sales/add`,
           icon: Plus,
         },
         {
-          title: "View Sales",
+          title: "View Consultations",
           url: `${endpoint}/sales/list`,
           icon: Eye,
         },
@@ -254,21 +254,21 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
       ],
     },
     {
-      title: "Products",
+      title: "Medicines",
       icon: Package,
       items: [
         {
-          title: "Add Product",
+          title: "Add Medicine",
           url: `${endpoint}/products/add`,
           icon: Plus,
         },
         {
-          title: "View Products",
+          title: "View Medicines",
           url: `${endpoint}/products/list`,
           icon: Eye,
         },
         {
-          title: "Update Product",
+          title: "Update Medicine",
           url: `${endpoint}/products/update`,
           icon: Plus,
         },
@@ -304,7 +304,7 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
                     icon: User,
                   },
                   {
-                    title: "Customers",
+                    title: "Students",
                     url: `${endpoint}/people/customers`,
                     icon: UserCheck,
                   },
