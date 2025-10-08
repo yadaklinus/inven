@@ -32,9 +32,6 @@ export default function LoginForm() {
   const {online} = useOnlineStatus()
 
   
-  
-
-
   const [loading,setLoading] = useState(false)
   
 
@@ -59,6 +56,7 @@ export default function LoginForm() {
         }
         router.push(`/warehouse/${data.user.warehousesId}/${data.user.role}/dashboard`)
       }
+      await axios.post("/api/syncNew/downSync",{online})
      
     }
    

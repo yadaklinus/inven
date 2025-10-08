@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       const endOfDay = new Date(date)
       endOfDay.setHours(23, 59, 59, 999)
 
-      const dailyData = await prisma.sale.findMany({
+      const dailyData = await prisma.consultation.findMany({
         where: {
           warehousesId: warehouseId,
           createdAt: {
@@ -31,12 +31,12 @@ export async function GET(request: NextRequest) {
           isDeleted: false
         },
         include: {
-          saleItems: {
+          consultationItems: {
             where: {
               isDeleted: false
             }
           },
-          selectedCustomer: true,
+          selectedStudent: true,
           paymentMethod: true
         },
         orderBy: {
@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
 
       const totalSales = dailyData.reduce((sum, sale) => sum + sale.grandTotal, 0)
       const totalProfit = dailyData.reduce((sum, sale) => {
-        return sum + sale.saleItems.reduce((itemSum, item) => itemSum + (item.profit * item.quantity), 0)
+        return sum + sale.consultationItems.reduce((itemSum, item) => itemSum + (item.profit * item.quantity), 0)
       }, 0)
 
       const productBreakdown = dailyData.reduce((acc, sale) => {
-        sale.saleItems.forEach(item => {
+        sale.consultationItems.forEach(item => {
           if (acc[item.productName]) {
             acc[item.productName].quantity += item.quantity
             acc[item.productName].totalSales += item.total
@@ -83,10 +83,10 @@ export async function GET(request: NextRequest) {
     const endOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0, 23, 59, 59, 999)
 
     // Get all sales for the month
-    const salesData = await prisma.saleItem.findMany({
+    const salesData = await prisma.consultationItem.findMany({
       where: {
         warehousesId: warehouseId,
-        sale: {
+        consultation: {
           createdAt: {
             gte: startOfMonth,
             lte: endOfMonth
@@ -96,13 +96,13 @@ export async function GET(request: NextRequest) {
         isDeleted: false
       },
       include: {
-        sale: true
+        consultation: true
       }
     })
 
     // Group by day
     const dailyStats = salesData.reduce((acc, item) => {
-      const date = item.sale?.createdAt.toISOString().split('T')[0]
+      const date = item.consultation?.createdAt.toISOString().split('T')[0]
       if (!date) return acc
 
       if (!acc[date]) {
@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
 
       acc[date].totalSales += item.total
       acc[date].totalProfit += (item.profit * item.quantity)
-      if (item.sale?.invoiceNo) {
-        acc[date].transactionCount.add(item.sale.invoiceNo)
+      if (item.consultation?.invoiceNo) {
+        acc[date].transactionCount.add(item.consultation.invoiceNo)
       }
 
       return acc

@@ -24,7 +24,7 @@ import {
   AreaChart,
 } from "recharts"
 import {
-  ShoppingCart,
+  Stethoscope,
   Package,
   Users,
   Warehouse,
@@ -38,6 +38,8 @@ import {
   Settings,
   UserCheck,
   Loader2,
+  Heart,
+  Droplets,
 } from "lucide-react"
 import { SystemStatus } from "@/components/system-status"
 import { getWareHouseId } from "@/hooks/get-werehouseId"
@@ -60,16 +62,18 @@ interface DashboardData {
   metrics: {
     totalUsers: number
     totalProducts: number
-    totalSales: number
-    totalCustomers: number
+    totalConsultations: number
+    totalStudents: number
     totalSuppliers: number
     totalRevenue: number
-    avgSaleValue: number
+    avgConsultationValue: number
   }
-  recentSales: Array<{
+  recentConsultations: Array<{
     id: string
     invoiceNo: string
-    customerName: string
+    studentName: string
+    studentMatric: string
+    diagnosis: string
     grandTotal: number
     createdAt: string
     paymentMethod: string
@@ -82,15 +86,15 @@ interface DashboardData {
     quantity: number
     unit: string
   }>
-  topProducts: Array<{
+  topMedicines: Array<{
     productId: string
     name: string
-    sales: number
+    prescriptions: number
     revenue: number
   }>
-  salesByMonth: Array<{
+  consultationsByMonth: Array<{
     month: string
-    sales: number
+    consultations: number
     revenue: number
   }>
   userRoles: Array<{
@@ -98,7 +102,7 @@ interface DashboardData {
     value: number
     color: string
   }>
-  customerTypes: Array<{
+  studentDepartments: Array<{
     name: string
     value: number
     color: string
@@ -216,10 +220,10 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-blue-600">
-                {dashboardData.warehouse.name} Dashboard
+                {dashboardData.warehouse.name} Clinic Dashboard
               </h1>
               <p className="text-muted-foreground">
-                Welcome back! Here's what's happening with your warehouse.
+                Welcome back! Here's what's happening with your clinic.
               </p>
               <p className="text-sm text-muted-foreground">
                 {dashboardData.warehouse.address} • {dashboardData.warehouse.email}
@@ -231,13 +235,13 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Total Consultations</CardTitle>
+                <Stethoscope className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardData.metrics.totalSales}</div>
+                <div className="text-2xl font-bold">{dashboardData.metrics.totalConsultations}</div>
                 <p className="text-xs text-muted-foreground">
-                  This warehouse
+                  This clinic
                 </p>
               </CardContent>
             </Card>
@@ -259,7 +263,7 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Products</CardTitle>
+                <CardTitle className="text-sm font-medium">Medicines</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -272,13 +276,13 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Customers</CardTitle>
+                <CardTitle className="text-sm font-medium">Students</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardData.metrics.totalCustomers}</div>
+                <div className="text-2xl font-bold">{dashboardData.metrics.totalStudents}</div>
                 <p className="text-xs text-muted-foreground">
-                  Registered customers
+                  Registered students
                 </p>
               </CardContent>
             </Card>
@@ -310,40 +314,40 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Sale Value</CardTitle>
+                <CardTitle className="text-sm font-medium">Avg. Consultation Value</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(dashboardData.metrics.avgSaleValue)}
+                  {formatCurrency(dashboardData.metrics.avgConsultationValue)}
                 </div>
-                <p className="text-xs text-muted-foreground">Per transaction</p>
+                <p className="text-xs text-muted-foreground">Per consultation</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Charts Section */}
-          {dashboardData.salesByMonth.length > 0 && (
+          {dashboardData.consultationsByMonth.length > 0 && (
             <div className="grid gap-6 lg:grid-cols-1">
-              {/* Monthly Sales Trend */}
+              {/* Monthly Consultations Trend */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
-                    Monthly Sales Trend
+                    Monthly Consultations Trend
                   </CardTitle>
-                  <CardDescription>Sales volume and revenue over the last 6 months</CardDescription>
+                  <CardDescription>Consultations volume and revenue over the last 6 months</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={dashboardData.salesByMonth}>
+                    <AreaChart data={dashboardData.consultationsByMonth}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip
                         formatter={(value, name) => [
                           name === "revenue" ? `${Number(value).toLocaleString()}` : value,
-                          name === "revenue" ? "Revenue" : "Sales",
+                          name === "revenue" ? "Revenue" : "Consultations",
                         ]}
                       />
                       <Area
@@ -356,7 +360,7 @@ export default function DashboardPage() {
                       />
                       <Area
                         type="monotone"
-                        dataKey="sales"
+                        dataKey="consultations"
                         stackId="2"
                         stroke="#10b981"
                         fill="#10b981"
@@ -371,22 +375,22 @@ export default function DashboardPage() {
 
           {/* Distribution Charts */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Customer Types */}
-            {dashboardData.customerTypes.length > 0 && (
+            {/* Student Departments */}
+            {dashboardData.studentDepartments.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <PieChartIcon className="h-5 w-5" />
-                    Customer Distribution
+                    Student Department Distribution
                   </CardTitle>
-                  <CardDescription>Breakdown by customer type</CardDescription>
+                  <CardDescription>Breakdown by student department</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center">
                     <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
                         <Pie
-                          data={dashboardData.customerTypes}
+                          data={dashboardData.studentDepartments}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}
@@ -394,7 +398,7 @@ export default function DashboardPage() {
                           paddingAngle={5}
                           dataKey="value"
                         >
-                          {dashboardData.customerTypes.map((entry:any, index:any) => (
+                          {dashboardData.studentDepartments.map((entry:any, index:any) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -403,7 +407,7 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                   </div>
                   <div className="flex justify-center gap-4 mt-4">
-                    {dashboardData.customerTypes.map((item:any, index:any) => (
+                    {dashboardData.studentDepartments.map((item:any, index:any) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                         <span className="text-sm">
@@ -461,39 +465,41 @@ export default function DashboardPage() {
 
           {/* Data Tables */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Recent Sales */}
+            {/* Recent Consultations */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
-                  Recent Sales
+                  Recent Consultations
                 </CardTitle>
-                <CardDescription>Latest transactions in this warehouse</CardDescription>
+                <CardDescription>Latest consultations in this clinic</CardDescription>
               </CardHeader>
               <CardContent>
-                {dashboardData.recentSales.length > 0 ? (
+                {dashboardData.recentConsultations.length > 0 ? (
                   <div className="space-y-4">
-                    {dashboardData.recentSales.map((sale:any) => (
-                      <div key={sale.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    {dashboardData.recentConsultations.map((consultation:any) => (
+                      <div key={consultation.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <div className="font-medium">{sale.invoiceNo}</div>
-                          <div className="text-sm text-muted-foreground">{sale.customerName}</div>
-                          <div className="text-xs text-muted-foreground">{sale.itemsCount} items</div>
+                          <div className="font-medium">{consultation.invoiceNo}</div>
+                          <div className="text-sm text-muted-foreground">{consultation.studentName}</div>
+                          <div className="text-xs text-muted-foreground">{consultation.studentMatric}</div>
+                          <div className="text-xs text-blue-600 font-medium">{consultation.diagnosis}</div>
+                          <div className="text-xs text-muted-foreground">{consultation.itemsCount} medicines</div>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">{formatCurrency(sale.grandTotal)}</div>
+                          <div className="font-medium">{formatCurrency(consultation.grandTotal)}</div>
                           <div className="text-sm text-muted-foreground capitalize">
-                            {sale.paymentMethod.replace("_", " ")}
+                            {consultation.paymentMethod.replace("_", " ")}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {new Date(sale.createdAt).toLocaleDateString()}
+                            {new Date(consultation.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-8">No recent sales</p>
+                  <p className="text-center text-muted-foreground py-8">No recent consultations</p>
                 )}
               </CardContent>
             </Card>
@@ -505,7 +511,7 @@ export default function DashboardPage() {
                   <AlertTriangle className="h-5 w-5 text-yellow-600" />
                   Low Stock Alert
                 </CardTitle>
-                <CardDescription>Products requiring attention</CardDescription>
+                <CardDescription>Medicines requiring attention</CardDescription>
               </CardHeader>
               <CardContent>
                 {dashboardData.lowStockProducts.length > 0 ? (
@@ -531,32 +537,32 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-8">All products are well stocked</p>
+                  <p className="text-center text-muted-foreground py-8">All medicines are well stocked</p>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Top Products Performance */}
-          {dashboardData.topProducts.length > 0 && (
+          {/* Top Medicines Performance */}
+          {dashboardData.topMedicines.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  Top Performing Products
+                  Most Prescribed Medicines
                 </CardTitle>
-                <CardDescription>Best selling products by revenue and volume</CardDescription>
+                <CardDescription>Most prescribed medicines by revenue and volume</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dashboardData.topProducts}>
+                  <BarChart data={dashboardData.topMedicines}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip
                       formatter={(value, name) => [
                         name === "revenue" ? `${formatCurrency(Number(value))}` : value,
-                        name === "revenue" ? "Revenue" : "Sales Quantity",
+                        name === "revenue" ? "Revenue" : "Prescriptions",
                       ]}
                     />
                     <Bar dataKey="revenue" fill="#3b82f6" />
@@ -579,26 +585,26 @@ export default function DashboardPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Link href={`${endPoint}/sales/add`}>
                   <Button className="h-20 flex-col gap-2 bg-transparent w-full" variant="outline">
-                    <ShoppingCart className="h-6 w-6" />
-                    <span>New Sale</span>
+                    <Stethoscope className="h-6 w-6" />
+                    <span>New Consultation</span>
                   </Button>
                 </Link>
                 <Link href={`${endPoint}/products/add`}>
                   <Button className="h-20 flex-col gap-2 bg-transparent w-full" variant="outline">
                     <Package className="h-6 w-6" />
-                    <span>Add Product</span>
+                    <span>Add Medicine</span>
                   </Button>
                 </Link>
                 <Link href={`${endPoint}/people/customers/add`}>
                   <Button className="h-20 flex-col gap-2 bg-transparent w-full" variant="outline">
                     <Users className="h-6 w-6" />
-                    <span>Add Customer</span>
+                    <span>Add Student</span>
                   </Button>
                 </Link>
                 <Link href={`${endPoint}/sales/list`}>
                   <Button className="h-20 flex-col gap-2 bg-transparent w-full" variant="outline">
                     <BarChart3 className="h-6 w-6" />
-                    <span>View Sales</span>
+                    <span>View Consultations</span>
                   </Button>
                 </Link>
               </div>
@@ -606,13 +612,13 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Daily Sales Modal */}
+        {/* Daily Consultations Modal */}
         <DailySalesModal
           isOpen={showDailyModal}
           onClose={handleCloseModal}
           date={selectedDate}
           warehouseId={warehouseId}
-          warehouseName={dashboardData?.warehouse?.name || "Warehouse"}
+          warehouseName={dashboardData?.warehouse?.name || "Clinic"}
           apiEndpoint="/api/sale/daily-analytics"
         />
       </>

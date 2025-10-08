@@ -21,52 +21,52 @@ export async function POST(req:NextRequest) {
       );
     }
 
-    // Fetch warehouse-specific statistics
+    // Fetch clinic-specific statistics
     const [
       totalUsers,
       totalProducts,
-      totalSales,
-      totalCustomers,
+      totalConsultations,
+      totalStudents,
       totalSuppliers,
-      recentSales,
+      recentConsultations,
       lowStockProducts,
-      topProducts,
-      salesByMonth
+      topMedicines,
+      consultationsByMonth
     ] = [
-      // Total users in this warehouse
+      // Total users in this clinic
       await prisma.users.count({
         where: { warehousesId: warehouseId,isDeleted:false }
       }),
       
-      // Total products in this warehouse
+      // Total medicines/products in this clinic
       await prisma.product.count({
         where: { warehousesId: warehouseId,isDeleted:false }
       }),
       
-      // Total sales for this warehouse
-      await prisma.sale.count({
+      // Total consultations for this clinic
+      await prisma.consultation.count({
         where: { warehousesId: warehouseId,isDeleted:false }
       }),
       
-      // Total customers for this warehouse
-      await prisma.customer.count({
+      // Total students registered in this clinic
+      await prisma.student.count({
         where: { warehousesId: warehouseId,isDeleted:false }
       }),
       
-      // Total suppliers for this warehouse
+      // Total suppliers for this clinic
       await prisma.supplier.count({
         where: { warehousesId: warehouseId,isDeleted:false }
       }),
       
-      // Recent sales for this warehouse
-      await prisma.sale.findMany({
+      // Recent consultations for this clinic
+      await prisma.consultation.findMany({
         where: { warehousesId: warehouseId,isDeleted:false },
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
-          selectedCustomer: true,
+          selectedStudent: true,
           paymentMethod: true,
-          saleItems: {
+          consultationItems: {
             include: {
               product: true
             }
@@ -74,7 +74,7 @@ export async function POST(req:NextRequest) {
         }
       }),
       
-      // Low stock products (quantity <= 5)
+      // Low stock medicines (quantity <= 5)
       await prisma.product.findMany({
         where: { 
           warehousesId: warehouseId,
@@ -85,8 +85,8 @@ export async function POST(req:NextRequest) {
         orderBy: { quantity: 'asc' }
       }),
       
-      // Top selling products by quantity
-      await prisma.saleItem.groupBy({
+      // Top prescribed medicines by quantity
+      await prisma.consultationItem.groupBy({
         by: ['productId', 'productName'],
         where: { warehousesId: warehouseId,isDeleted:false },
         _sum: {
@@ -101,25 +101,13 @@ export async function POST(req:NextRequest) {
         take: 5
       }),
       
-      // Sales by month for the last 6 months
-      // await prisma.$queryRaw`
-      //   SELECT 
-      //     TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') as month,
-      //     COUNT(*)::int as sales,
-      //     SUM("grandTotal")::float as revenue
-      //   FROM "Sale" 
-      //   WHERE "warehousesId" = ${warehouseId} AND "isDeleted" = ${false}
-      //     AND "createdAt" >= NOW() - INTERVAL '6 months'
-      //   GROUP BY DATE_TRUNC('month', "createdAt")
-      //   ORDER BY DATE_TRUNC('month', "createdAt")
-      // `
-    
-    await prisma.$queryRawUnsafe(`
+      // Consultations by month for the last 6 months
+      await prisma.$queryRawUnsafe(`
         SELECT 
           strftime('%Y-%m', "createdAt") AS month,
-          COUNT(*) AS sales,
+          COUNT(*) AS consultations,
           SUM("grandTotal") AS revenue
-        FROM "Sale"
+        FROM "Consultation"
         WHERE "warehousesId" = ?
           AND "createdAt" >= datetime('now', '-6 months')
         GROUP BY strftime('%Y-%m', "createdAt")
@@ -129,15 +117,15 @@ export async function POST(req:NextRequest) {
 
     ];
 
-    // Calculate total revenue for this warehouse
-    const totalRevenue = await prisma.sale.aggregate({
+    // Calculate total revenue for this clinic
+    const totalRevenue = await prisma.consultation.aggregate({
       where: { warehousesId: warehouseId,isDeleted:false },
       _sum: {
         grandTotal: true
       }
     });
 
-    // Get user roles distribution for this warehouse
+    // Get user roles distribution for this clinic
     const userRoles = await prisma.users.groupBy({
       by: ['role'],
       where: { warehousesId: warehouseId,isDeleted:false },
@@ -146,17 +134,17 @@ export async function POST(req:NextRequest) {
       }
     });
 
-    // Get customer types distribution for this warehouse
-    const customerTypes = await prisma.customer.groupBy({
-      by: ['type'],
-      where: { warehousesId: warehouseId,isDeleted:false },
+    // Get student departments distribution for this clinic
+    const studentDepartments = await prisma.student.groupBy({
+      by: ['department'],
+      where: { warehousesId: warehouseId,isDeleted:false, department: { not: null } },
       _count: {
-        type: true
+        department: true
       }
     });
 
-    // Calculate average sale value
-    const avgSaleValue = totalSales > 0 ? (totalRevenue._sum.grandTotal || 0) / totalSales : 0;
+    // Calculate average consultation value
+    const avgConsultationValue = totalConsultations > 0 ? (totalRevenue._sum.grandTotal || 0) / totalConsultations : 0;
 
     return NextResponse.json({
       warehouse: {
@@ -170,20 +158,22 @@ export async function POST(req:NextRequest) {
       metrics: {
         totalUsers,
         totalProducts,
-        totalSales,
-        totalCustomers,
+        totalConsultations,
+        totalStudents,
         totalSuppliers,
         totalRevenue: totalRevenue._sum.grandTotal || 0,
-        avgSaleValue
+        avgConsultationValue
       },
-      recentSales: recentSales.map((sale: any) => ({
-        id: sale.id,
-        invoiceNo: sale.invoiceNo,
-        customerName: sale.selectedCustomer?.name || 'Walk-in Customer',
-        grandTotal: sale.grandTotal,
-        createdAt: sale.createdAt,
-        paymentMethod: sale.paymentMethod?.[0]?.method || 'cash',
-        itemsCount: sale.saleItems.length
+      recentConsultations: recentConsultations.map((consultation: any) => ({
+        id: consultation.id,
+        invoiceNo: consultation.invoiceNo,
+        studentName: consultation.selectedStudent?.name || 'Walk-in Student',
+        studentMatric: consultation.selectedStudent?.matricNumber || 'N/A',
+        diagnosis: consultation.diagnosis || 'General consultation',
+        grandTotal: consultation.grandTotal,
+        createdAt: consultation.createdAt,
+        paymentMethod: consultation.paymentMethod?.[0]?.method || 'cash',
+        itemsCount: consultation.consultationItems.length
       })),
       lowStockProducts: lowStockProducts.map((product: any) => ({
         id: product.id,
@@ -192,22 +182,22 @@ export async function POST(req:NextRequest) {
         quantity: product.quantity,
         unit: product.unit
       })),
-      topProducts: topProducts.map((product: any) => ({
-        productId: product.productId,
-        name: product.productName,
-        sales: product._sum.quantity,
-        revenue: product._sum.total
+      topMedicines: topMedicines.map((medicine: any) => ({
+        productId: medicine.productId,
+        name: medicine.productName,
+        prescriptions: medicine._sum.quantity,
+        revenue: medicine._sum.total
       })),
-      salesByMonth: salesByMonth || [],
+      consultationsByMonth: consultationsByMonth || [],
       userRoles: userRoles.map((role: any) => ({
         name: role.role,
         value: role._count.role,
         color: role.role === 'admin' ? '#10b981' : role.role === 'sales' ? '#3b82f6' : '#f59e0b'
       })),
-      customerTypes: customerTypes.map((type: any) => ({
-        name: type.type,
-        value: type._count.type,
-        color: type.type === 'retal' ? '#3b82f6' : '#10b981'
+      studentDepartments: studentDepartments.map((dept: any) => ({
+        name: dept.department || 'Unknown',
+        value: dept._count.department,
+        color: '#3b82f6'
       }))
     });
   } catch (error) {

@@ -24,10 +24,10 @@ if (process.env.NODE_ENV !== "production") globalThis.onlinePrisma = onlinePrism
 
 // Ensure connection on startup
 async function ensureConnection() {
-  if (!(await isOnline())) {
-    console.warn("⚠️ Skipping Prisma connection — offline mode detected");
-    return;
-  }
+  // if (!(await isOnline())) {
+  //   console.warn("⚠️ Skipping Prisma connection — offline mode detected");
+  //   return;
+  // }
   
   try {
     await onlinePrisma.$connect();

@@ -1,6 +1,6 @@
-import AddSalePage from "@/components/sales/AddSalesPage";
+import AddConsultationPage from "@/components/consultations/AddConsultationPage";
 
 
-export default function AdminSalesPage() {
-  return <AddSalePage/>;
+export default function AdminConsultationPage() {
+  return <AddConsultationPage/>;
 }
