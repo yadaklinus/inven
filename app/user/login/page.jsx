@@ -66,7 +66,7 @@ export default function LoginForm() {
   },[data])
 
   useEffect(() => {
-        async function syncNow() {
+     async function syncNow() {
           try {
             const res = await axios.post("/api/syncNew", { online });
             
@@ -83,12 +83,6 @@ export default function LoginForm() {
         }
     
         // Cleanup when offline or unmounted
-        return () => {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-        };
       }, [online]);
 
   
