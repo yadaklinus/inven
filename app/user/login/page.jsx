@@ -79,7 +79,6 @@ export default function LoginForm() {
         // Start interval only if online
         if (online) {
           syncNow(); // Run once immediately
-          intervalRef.current = setInterval(syncNow, 1000 * 60 * 5); // every 5 minutes (as 1000 * 30 is 30 seconds, not 5 mins)
         }
     
         // Cleanup when offline or unmounted
