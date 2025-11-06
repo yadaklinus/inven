@@ -77,9 +77,7 @@ export default function SupAdminLayout({children}:{children:React.ReactNode}){
     
     return(
         <>
-        
-                    {children}
-         
+                    {children}    
         </>
     )
 }

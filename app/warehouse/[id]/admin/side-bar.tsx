@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { useState,useEffect } from "react"
+import { useState, useEffect, useRef } from "react" // Added useRef
 import {
   BarChart3,
   Bell,
@@ -24,8 +24,9 @@ import {
   Receipt,
   Calculator,
   Quote,
+  RefreshCw, // Added Sync Icon
 } from "lucide-react"
-
+import axios from "axios" // Added axios
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
@@ -52,12 +53,14 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 import { CalculatorCard } from "@/components/shad-cal"
 import { useRouter } from "next/navigation"
+// Assuming this is the correct path for your hook
+import { useOnlineStatus } from "@/hooks/check-online"
 
 // Navigation data for inventory management system
-
+// ... (NavSection component remains unchanged) ...
 function NavSection({
   title,
   items,
@@ -74,11 +77,9 @@ function NavSection({
     }>
   }>
 }) {
+  const [open, setOpen] = useState(false)
 
-  const [open, setOpen] = useState(false);
-  
   return (
-    
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
@@ -107,7 +108,6 @@ function NavSection({
                         </SidebarMenuSubItem>
                       ))}
                     </SidebarMenuSub>
-                    
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
@@ -123,7 +123,6 @@ function NavSection({
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            
           )
         })}
       </SidebarMenu>
@@ -132,25 +131,82 @@ function NavSection({
 }
 
 export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [open, setOpen] = useState(false);
-  const {data,loading,error} = fetchData("/api/settings")
+  const [open, setOpen] = useState(false)
+  const { data, loading, error } = fetchData("/api/settings")
   const warehouseId = getWareHouseId()
-  const {data:session} = useSession()
-  const [endpoint,setEndPoint] = useState("")
+  const { data: session } = useSession()
+  const [endpoint, setEndPoint] = useState("")
   const router = useRouter()
 
+  // --- Start of New/Modified Code ---
 
-  useEffect(()=>{
+  // State for the sync button
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  // Uncommented and using the connection check hook
+    const {online} = useOnlineStatus()
+  
+  
+  // The interval logic from your snippet (optional, but included as you provided it)
+  // We need a ref to hold the interval ID
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Manual sync function
+  const handleSync = async () => {
+    if (isSyncing) return // Don't sync if already syncing
+    setIsSyncing(true)
+    console.log("Manual sync triggered...")
+    try {
+      // Using the logic from your snippet
+      const res = await axios.post("/api/syncNew", { online: online })
+      console.log("Sync result:", res.data)
+      // You could add a success toast here
+    } catch (error) {
+      console.error("Sync error:", error)
+      // You could add an error toast here
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  // Auto-sync logic from your snippet
+  useEffect(() => {
+    async function syncNow() {
+      // Don't auto-sync if a manual sync is in progress
+      if (isSyncing) return; 
+
+      console.log("Auto-sync running...")
+      try {
+        const res = await axios.post("/api/syncNew", { online: online })
+        console.log("Auto-sync result:", res.data)
+      } catch (error) {
+        console.error("Auto-sync error:", error)
+      }
+    }
+
+    // Start interval only if online
+    if (online) {
+      syncNow() // Run once immediately
+      intervalRef.current = setInterval(syncNow, 1000 * 60 * 5) // every 5 minutes
+    }
+
+    // Cleanup when offline or unmounted
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [online, isSyncing]) // Added isSyncing dependency
+
+  // --- End of New/Modified Code ---
+
+  useEffect(() => {
     setEndPoint(`/warehouse/${warehouseId}/${session?.user?.role}`)
-  },[session,warehouseId])
+  }, [session, warehouseId])
 
-  
+  if (loading) return ""
 
-  
-  if(loading) return ""
-
-  // const isOnline = useConnectionCheck()
-  
   return (
     <Sidebar className="mb-4" collapsible="icon" {...props}>
       <SidebarHeader>
@@ -164,23 +220,34 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{data?.companyName}</span>
                   <span className="truncate text-xs">Admin Management System</span>
-                  {/* {isOnline ? "online" : "ofline"} */}
+                  {/* {online ? "online" : "ofline"} */}
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-           
             <SidebarMenuButton>
-              <SystemStatus/>
+              <SystemStatus />
             </SidebarMenuButton>
           </SidebarMenuItem>
+
+          {/* --- NEW SYNC BUTTON --- */}
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleSync} disabled={isSyncing || !online} tooltip="Sync Data">
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+              />
+              <span>{isSyncing ? "Syncing..." : "Sync Now"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          {/* --- END OF NEW SYNC BUTTON --- */}
+
         </SidebarMenu>
         <SidebarMenu>
           <SidebarMenuItem>
-          <SidebarMenuButton
+            <SidebarMenuButton
               tooltip="POS"
-              onClick={()=>router.replace(`${endpoint}/sales/add`)}
+              onClick={() => router.replace(`${endpoint}/sales/add`)}
               className="bg-blue-500 text-white hover:bg-blue-600 transition"
             >
               <ArrowLeftRight className="mr-2 h-4 w-4" />
@@ -190,36 +257,37 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        
-      <SidebarMenu>
-      <SidebarMenuItem>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <SidebarMenuButton
-              tooltip="Calculator"
-              className="hover:bg-blue-600 transition"
-            >
-              <Calculator className="mr-2 h-4 w-4" />
-              <span>Calculator</span>
-            </SidebarMenuButton>
-          </PopoverTrigger>
-          <PopoverContent
-            side="right"
-            align="start"
-            className="p-0 shadow-xl border rounded-2xl w-80"
-          >
-            <CalculatorCard />
-          </PopoverContent>
-        </Popover>
-      </SidebarMenuItem>
-    </SidebarMenu>
-        <NavSection title="Overview" items={[
-                {
-                  title: "Dashboard",
-                  url: `${endpoint}/dashboard`,
-                  icon: Home,
-                },
-              ]} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <SidebarMenuButton
+                  tooltip="Calculator"
+                  className="hover:bg-blue-600 transition"
+                >
+                  <Calculator className="mr-2 h-4 w-4" />
+                  <span>Calculator</span>
+                </SidebarMenuButton>
+              </PopoverTrigger>
+              <PopoverContent
+                side="right"
+                align="start"
+                className="p-0 shadow-xl border rounded-2xl w-80"
+              >
+                <CalculatorCard />
+              </PopoverContent>
+            </Popover>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        {/* ... (Rest of the NavSection components remain unchanged) ... */}
+         <NavSection title="Overview" items={[
+                  {
+                    title: "Dashboard",
+                    url: `${endpoint}/dashboard`,
+                    icon: Home,
+                  },
+                ]} />
         <NavSection title="Inventory" items={[
     {
       title: "Sales",
@@ -294,54 +362,54 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
    
   ]} />
         <NavSection title="People" items={[
-              {
-                title: "People",
-                icon: Users,
-                items: [
                   {
-                    title: "Users",
-                    url: `${endpoint}/people/users`,
-                    icon: User,
+                    title: "People",
+                    icon: Users,
+                    items: [
+                      {
+                        title: "Users",
+                        url: `${endpoint}/people/users`,
+                        icon: User,
+                      },
+                      {
+                        title: "Customers",
+                        url: `${endpoint}/people/customers`,
+                        icon: UserCheck,
+                      },
+                      {
+                        title: "Suppliers",
+                        url: `${endpoint}/people/suppliers`,
+                        icon: Building2,
+                      },
+                    ],
                   },
-                  {
-                    title: "Customers",
-                    url: `${endpoint}/people/customers`,
-                    icon: UserCheck,
-                  },
-                  {
-                    title: "Suppliers",
-                    url: `${endpoint}/people/suppliers`,
-                    icon: Building2,
-                  },
-                ],
-              },
-            ]} />
+                ]} />
         <NavSection
             title="System"
             items={[
-              {
-                title: "Notifications",
-                url: "/notifications",
-                icon: Bell,
-              },
-              {
-                title: "Recpiet",
-                url: `${endpoint}/receipt`,
-                icon: Receipt,
-              },
-              {
-                title: "Settings",
-                url: "/settings",
-                icon: Settings,
-              },
-            ].filter((item) => item.title !== "Notifications" && item.title !== "Settings")}
+                  {
+                    title: "Notifications",
+                    url: "/notifications",
+                    icon: Bell,
+                  },
+                  {
+                    title: "Recpiet",
+                    url: `${endpoint}/receipt`,
+                    icon: Receipt,
+                  },
+                  {
+                    title: "Settings",
+                    url: "/settings",
+                    icon: Settings,
+                  },
+                ].filter((item) => item.title !== "Notifications" && item.title !== "Settings")}
           />
 
         
 
         <SidebarMenu>
           <SidebarMenuItem>
-          <SidebarMenuButton
+            <SidebarMenuButton
               tooltip="Logout"
               onClick={() => signOut()}
               className="bg-red-500 text-white hover:bg-red-600 transition"
@@ -354,14 +422,11 @@ export function SupAdminAppSidebar({ ...props }: React.ComponentProps<typeof Sid
 
         <SidebarMenu>
           <SidebarMenuItem>
-          <SidebarMenuButton
-            >
-              
+            <SidebarMenuButton>
               <span></span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

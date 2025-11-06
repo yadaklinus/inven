@@ -65,6 +65,32 @@ export default function LoginForm() {
     main()
   },[data])
 
+  useEffect(() => {
+        async function syncNow() {
+          try {
+            const res = await axios.post("/api/syncNew", { online });
+            
+            console.log("Sync result:", res.data);
+          } catch (error) {
+            console.error("Sync error:", error);
+          }
+        }
+    
+        // Start interval only if online
+        if (online) {
+          syncNow(); // Run once immediately
+          intervalRef.current = setInterval(syncNow, 1000 * 60 * 5); // every 5 minutes (as 1000 * 30 is 30 seconds, not 5 mins)
+        }
+    
+        // Cleanup when offline or unmounted
+        return () => {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+        };
+      }, [online]);
+
   
 
   return (
@@ -116,4 +142,3 @@ export default function LoginForm() {
     </div>
   )
 }
-
