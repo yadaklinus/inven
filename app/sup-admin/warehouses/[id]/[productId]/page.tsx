@@ -317,7 +317,7 @@ export default function ProductDetailsPage() {
                         <YAxis />
                         <Tooltip 
                           labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                          formatter={(value: any, name: string) => [
+                          formatter={(value: any, name: any) => [
                             name === 'quantity' ? `${value} ${product.unit}` : formatCurrency(value),
                             name === 'quantity' ? 'Quantity Sold' : 'Revenue'
                           ]}
