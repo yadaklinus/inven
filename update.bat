@@ -1,25 +1,32 @@
 @echo off
-:: Set the path to your project folder
-set PROJECT_DIR="C:\path\to\your\project"
+:: Navigate to the folder where this script is located
+cd /d "%~dp0"
 
-echo [PROCESS] Moving to project directory...
-cd /d %PROJECT_DIR%
+echo [1/3] Cleaning up Prisma migrations...
+if exist "prisma\migrations" (
+    rmdir /s /q "prisma\migrations"
+    mkdir "prisma\migrations"
+    echo [OK] migrations folder cleared.
+) else (
+    echo [SKIP] No migrations folder found.
+)
 
-:: Check if the directory is actually a git repository
-if not exist .git (
-    echo [ERROR] This directory is not a Git repository.
+echo [2/3] Pulling from Git...
+git pull
+
+:: Handle potential Git errors
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Git pull failed. Check for merge conflicts.
     pause
     exit /b
 )
 
-echo [PROCESS] Pulling latest changes from remote...
-git pull
+echo [3/3] Syncing Prisma...
+:: This ensures your local DB matches the newly pulled schema
+call npx prisma generate
 
-:: Check if the pull was successful
-if %ERRORLEVEL% EQU 0 (
-    echo [SUCCESS] Project updated successfully.
-) else (
-    echo [ERROR] Git pull failed. Check for merge conflicts or connection issues.
-)
-
+echo.
+echo ==========================================
+echo [DONE] Project updated successfully.
+echo ==========================================
 pause
