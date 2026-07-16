@@ -1,7 +1,7 @@
-import { PrismaClient } from "@/prisma/generated/online";
+import onlinePrisma from "@/lib/onlinePrisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient()
+const prisma = onlinePrisma;
 
 export async function POST(req:NextRequest) {
   try {

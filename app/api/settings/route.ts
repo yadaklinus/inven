@@ -1,7 +1,7 @@
-import { PrismaClient } from "@/prisma/generated/offline";
+import offlinePrisma from "@/lib/oflinePrisma";
 import { NextResponse } from "next/server";
 
-const prisma = new PrismaClient()
+const prisma = offlinePrisma;
 export async function GET(){
     const data = await prisma.settings.findUnique({
         where:{setting_id:1,isDeleted:false}

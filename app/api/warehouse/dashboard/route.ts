@@ -1,9 +1,9 @@
-import { PrismaClient } from "@/prisma/generated/offline";
+import offlinePrisma from "@/lib/oflinePrisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient()
+const prisma = offlinePrisma;
 
-export async function POST(req:NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const { warehouseId } = await req.json()
 
@@ -11,7 +11,7 @@ export async function POST(req:NextRequest) {
 
     // Get warehouse info first
     const warehouse = await prisma.warehouses.findUnique({
-      where: { warehouseCode: warehouseId,isDeleted:false }
+      where: { warehouseCode: warehouseId, isDeleted: false }
     });
 
     if (!warehouse) {
@@ -33,105 +33,91 @@ export async function POST(req:NextRequest) {
       topProducts,
       salesByMonth
     ] = [
-      // Total users in this warehouse
-      await prisma.users.count({
-        where: { warehousesId: warehouseId,isDeleted:false }
-      }),
-      
-      // Total products in this warehouse
-      await prisma.product.count({
-        where: { warehousesId: warehouseId,isDeleted:false }
-      }),
-      
-      // Total sales for this warehouse
-      await prisma.sale.count({
-        where: { warehousesId: warehouseId,isDeleted:false }
-      }),
-      
-      // Total customers for this warehouse
-      await prisma.customer.count({
-        where: { warehousesId: warehouseId,isDeleted:false }
-      }),
-      
-      // Total suppliers for this warehouse
-      await prisma.supplier.count({
-        where: { warehousesId: warehouseId,isDeleted:false }
-      }),
-      
-      // Recent sales for this warehouse
-      await prisma.sale.findMany({
-        where: { warehousesId: warehouseId,isDeleted:false },
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          selectedCustomer: true,
-          paymentMethod: true,
-          saleItems: {
-            include: {
-              product: true
+        // Total users in this warehouse
+        await prisma.users.count({
+          where: { warehousesId: warehouseId, isDeleted: false }
+        }),
+
+        // Total products in this warehouse
+        await prisma.product.count({
+          where: { warehousesId: warehouseId, isDeleted: false }
+        }),
+
+        // Total sales for this warehouse
+        await prisma.sale.count({
+          where: { warehousesId: warehouseId, isDeleted: false }
+        }),
+
+        // Total customers for this warehouse
+        await prisma.customer.count({
+          where: { warehousesId: warehouseId, isDeleted: false }
+        }),
+
+        // Total suppliers for this warehouse
+        await prisma.supplier.count({
+          where: { warehousesId: warehouseId, isDeleted: false }
+        }),
+
+        // Recent sales for this warehouse
+        await prisma.sale.findMany({
+          where: { warehousesId: warehouseId, isDeleted: false },
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            selectedCustomer: true,
+            paymentMethod: true,
+            saleItems: {
+              include: {
+                product: true
+              }
             }
           }
-        }
-      }),
-      
-      // Low stock products (quantity <= 5)
-      await prisma.product.findMany({
-        where: { 
-          warehousesId: warehouseId,
-          isDeleted:false,
-          quantity: { lte: 5 }
-        },
-        take: 10,
-        orderBy: { quantity: 'asc' }
-      }),
-      
-      // Top selling products by quantity
-      await prisma.saleItem.groupBy({
-        by: ['productId', 'productName'],
-        where: { warehousesId: warehouseId,isDeleted:false },
-        _sum: {
-          quantity: true,
-          total: true
-        },
-        orderBy: {
+        }),
+
+        // Low stock products (quantity <= 5)
+        await prisma.product.findMany({
+          where: {
+            warehousesId: warehouseId,
+            isDeleted: false,
+            quantity: { lte: 5 }
+          },
+          take: 10,
+          orderBy: { quantity: 'asc' }
+        }),
+
+        // Top selling products by quantity
+        await prisma.saleItem.groupBy({
+          by: ['productId', 'productName'],
+          where: { warehousesId: warehouseId, isDeleted: false },
           _sum: {
-            total: 'desc'
-          }
-        },
-        take: 5
-      }),
-      
-      // Sales by month for the last 6 months
-      // await prisma.$queryRaw`
-      //   SELECT 
-      //     TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') as month,
-      //     COUNT(*)::int as sales,
-      //     SUM("grandTotal")::float as revenue
-      //   FROM "Sale" 
-      //   WHERE "warehousesId" = ${warehouseId} AND "isDeleted" = ${false}
-      //     AND "createdAt" >= NOW() - INTERVAL '6 months'
-      //   GROUP BY DATE_TRUNC('month', "createdAt")
-      //   ORDER BY DATE_TRUNC('month', "createdAt")
-      // `
-    
-    await prisma.$queryRawUnsafe(`
-        SELECT 
-          strftime('%Y-%m', "createdAt") AS month,
-          COUNT(*) AS sales,
-          SUM("grandTotal") AS revenue
-        FROM "Sale"
-        WHERE "warehousesId" = ?
-          AND "createdAt" >= datetime('now', '-6 months')
-        GROUP BY strftime('%Y-%m', "createdAt")
-        ORDER BY strftime('%Y-%m', "createdAt")
-      `, warehouseId)
+            quantity: true,
+            total: true
+          },
+          orderBy: {
+            _sum: {
+              total: 'desc'
+            }
+          },
+          take: 5
+        }),
 
-
-    ];
+        // Sales by month for the last 6 months
+        await prisma.$queryRaw`
+          SELECT 
+            to_char("createdAt", 'YYYY-MM') AS month,
+            COUNT(*)::int AS sales,
+            SUM("grandTotal")::float AS revenue
+          FROM "Sale"
+          WHERE "warehousesId" = ${warehouseId} AND "isDeleted" = ${false}
+            AND "createdAt" >= NOW() - INTERVAL '6 months'
+          GROUP BY to_char("createdAt", 'YYYY-MM')
+          ORDER BY to_char("createdAt", 'YYYY-MM')
+        `
+      ];
 
     // Calculate total revenue for this warehouse
     const totalRevenue = await prisma.sale.aggregate({
-      where: { warehousesId: warehouseId,isDeleted:false },
+      where: { warehousesId: warehouseId, isDeleted: false },
       _sum: {
         grandTotal: true
       }
@@ -140,7 +126,7 @@ export async function POST(req:NextRequest) {
     // Get user roles distribution for this warehouse
     const userRoles = await prisma.users.groupBy({
       by: ['role'],
-      where: { warehousesId: warehouseId,isDeleted:false },
+      where: { warehousesId: warehouseId, isDeleted: false },
       _count: {
         role: true
       }
@@ -149,7 +135,7 @@ export async function POST(req:NextRequest) {
     // Get customer types distribution for this warehouse
     const customerTypes = await prisma.customer.groupBy({
       by: ['type'],
-      where: { warehousesId: warehouseId,isDeleted:false },
+      where: { warehousesId: warehouseId, isDeleted: false },
       _count: {
         type: true
       }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@/prisma/generated/offline"
+import offlinePrisma from "@/lib/oflinePrisma"
 
-const prisma = new PrismaClient()
+const prisma = offlinePrisma;
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,29 +1,8 @@
-import { PrismaClient as OfflinePrismaClient } from "@/prisma/generated/offline";
-import { PrismaClient as OnlinePrismaClient } from "@/prisma/generated/online";
+import offlinePrisma from "./oflinePrisma";
+import onlinePrisma from "./onlinePrisma";
 
-const offlineDb = new OfflinePrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
-});
-const onlineDb = new OnlinePrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
-});
-
-// Ensure connections
-async function ensureConnections() {
-  try {
-    await Promise.all([
-      offlineDb.$connect(),
-      onlineDb.$connect()
-    ]);
-    console.log("Sync service: Both database clients connected");
-  } catch (error) {
-    console.error("Sync service: Failed to connect database clients:", error);
-    throw new Error("Database connection failed in sync service");
-  }
-}
-
-// Initialize connections
-ensureConnections().catch(console.error);
+const offlineDb = offlinePrisma;
+const onlineDb = onlinePrisma;
 
 export interface SyncResult {
   success: boolean;

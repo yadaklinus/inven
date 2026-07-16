@@ -1,7 +1,7 @@
-import { PrismaClient } from "@/prisma/generated/online";
+import onlinePrisma from "@/lib/onlinePrisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient()
+const prisma = onlinePrisma;
 
 export async function GET() {
   try {
@@ -264,7 +264,5 @@ export async function POST(req: NextRequest) {
       { error: 'Failed to fetch warehouse analytics' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

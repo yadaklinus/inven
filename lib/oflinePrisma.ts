@@ -1,4 +1,4 @@
-// lib/prisma.ts
+// lib/oflinePrisma.ts
 import { PrismaClient } from "@/prisma/generated/offline";
 
 declare global {
@@ -7,27 +7,11 @@ declare global {
 }
 
 const offlinePrisma = globalThis.offlinePrisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
+  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"]
 });
 
-if (process.env.NODE_ENV !== "production") globalThis.offlinePrisma = offlinePrisma;
-
-// Ensure connection on startup
-async function ensureConnection() {
-  try {
-    await offlinePrisma.$connect();
-    console.log("Offline Prisma client connected successfully");
-  } catch (error) {
-    console.error("Failed to connect offline Prisma client:", error);
-  }
+if (process.env.NODE_ENV !== "production") {
+  globalThis.offlinePrisma = offlinePrisma;
 }
-
-// Auto-connect when module is imported
-ensureConnection();
-
-// Graceful shutdown
-process.on('beforeExit', async () => {
-  await offlinePrisma.$disconnect();
-});
 
 export default offlinePrisma;

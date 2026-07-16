@@ -96,7 +96,7 @@ export async function POST(req:NextRequest){
     return NextResponse.json("data")
    } catch (error) {
     console.log(error)
-    NextResponse.json(error,{status:500})
+    return NextResponse.json(error,{status:500})
    }
 }
 
