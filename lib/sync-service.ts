@@ -51,9 +51,6 @@ export class DataSyncService {
     };
 
     try {
-      // Ensure database connections before starting
-      await ensureConnections();
-      
       // Test connections
       await Promise.all([
         offlineDb.$queryRaw`SELECT 1`,
