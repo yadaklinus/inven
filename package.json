@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npx prisma generate --schema=prisma/online.prisma && npx prisma generate --schema=prisma/schema.prisma && next dev --turbopack",
     "build": "npx prisma generate --schema=prisma/online.prisma && npx prisma generate --schema=prisma/schema.prisma && next build",
-    "start": "next start -H 0.0.0.0 -p 3000",
+    "start": "next start -H 0.0.0.0 -p 3096",
     "lint": "eslint --fix"
   },
   "dependencies": {
