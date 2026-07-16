@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
         // Build search conditions
         const searchConditions = search ? {
             OR: [
-                { name: { contains: search, mode: 'insensitive' } },
-                { barcode: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } }
+                { name: { contains: search, mode: 'insensitive' as const } },
+                { barcode: { contains: search, mode: 'insensitive' as const } },
+                { description: { contains: search, mode: 'insensitive' as const } }
             ]
         } : {};
 
@@ -74,7 +74,5 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         console.error('Product list error:', error);
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
-    } finally {
-        await offlinePrisma.$disconnect();
     }
 }

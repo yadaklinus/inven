@@ -41,19 +41,19 @@ export async function POST(req: NextRequest) {
         {
           name: {
             contains: searchTerm,
-            mode: 'insensitive'
+            mode: 'insensitive' as const
           }
         },
         {
           barcode: {
             contains: searchTerm,
-            mode: 'insensitive'
+            mode: 'insensitive' as const
           }
         },
         {
           description: {
             contains: searchTerm,
-            mode: 'insensitive'
+            mode: 'insensitive' as const
           }
         }
       ];
